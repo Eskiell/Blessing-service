@@ -39,4 +39,4 @@ O launcher não testa, inicia ou encerra o servidor. Se `192.168.15.122:5911` es
 - Title ID: `EZST00001`.
 - Nome: `EZHELIT Store`.
 - Deeplink: `http://192.168.15.122:5911/`.
-- Categoria: `applicationCategoryType: 0`.
+- Categoria Media: `applicationCategoryType: 65536`.
