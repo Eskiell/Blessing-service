@@ -1,129 +1,122 @@
 /*
- * ps5-store installer
+ * EZHELIT Store launcher installer.
  *
- * Adapted from ps5-payload-dev/ftpsrv's install-ps5.c (GPLv3), by
- * John Törnblom. Original: https://github.com/ps5-payload-dev/ftpsrv/blob/master/install-ps5.c
- *
- * What this does: embeds ps5-store.elf + icon0.png + param.json into
- * this binary at build time, then writes them out to /user/app/<TITLE_ID>/
- * and calls into the system's app-install routine (libSceAppInstUtil,
- * resolved directly from the kernel's loaded module table) so the PS5
- * registers it as a real home-screen tile.
- *
- * Run this ONCE (or whenever ps5-store.elf changes) via your ELF
- * loader. It doesn't start the store itself - tapping the resulting
- * tile on the PS5 home screen does that.
+ * Installs a PS5 Media launcher made only of param.json and icon0.png.
+ * The installed launcher contains no eboot.elf and only opens the deeplink
+ * declared in param.json.
  */
 
+#include <errno.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <sys/stat.h>
+
 #include <ps5/kernel.h>
 
 #ifndef TITLE_ID
-#define TITLE_ID "HBST00001"
+#define TITLE_ID "EZST00001"
 #endif
 
-#define INCASSET(name, file) \
-  __asm__(".section .rodata\n" \
-          ".global " #name "\n" \
-          ".global " #name "_end\n" \
-          ".global " #name "_size\n" \
-          ".align 16\n" \
-          #name ":\n" \
-          ".incbin \"" file "\"\n" \
-          #name "_end:\n" \
-          #name "_size:\n" \
-          ".quad " #name "_end - " #name "\n" \
-          ".previous\n"); \
-  extern const uint8_t name[]; \
-  extern const size_t name##_size;
+#define APP_ROOT "/user/app"
+#define APP_PARENT APP_ROOT "/"
+#define APP_DIR APP_ROOT "/" TITLE_ID
+#define SCE_SYS_DIR APP_DIR "/sce_sys"
+
+#define INCASSET(name, file)                                                  \
+  __asm__(".section .rodata\n"                                                \
+          ".global " #name "\n"                                               \
+          ".global " #name "_end\n"                                           \
+          ".global " #name "_size\n"                                          \
+          ".align 16\n"                                                        \
+          #name ":\n"                                                         \
+          ".incbin \"" file "\"\n"                                            \
+          #name "_end:\n"                                                     \
+          #name "_size:\n"                                                    \
+          ".quad " #name "_end - " #name "\n"                                \
+          ".previous\n");                                                     \
+  extern const uint8_t name[];                                                \
+  extern const size_t name##_size
 
 int sceAppInstUtilInitialize(void);
-int sceAppInstUtilAppInstallAll(void*);
-int sceAppInstUtilAppUnInstall(const char*);
+int sceAppInstUtilAppInstallAll(void *);
+int sceAppInstUtilAppUnInstall(const char *);
 
-INCASSET(payload, "../ps5-store.elf");
-INCASSET(param, "assets/param.json");
-INCASSET(icon0, "assets/icon0.png");
+INCASSET(launcher_param, "param.json");
+INCASSET(launcher_icon, "icon0.png");
 
 static int
-install_file(const char* path, const uint8_t* data, size_t size) {
-  FILE* f;
-
-  if (!(f = fopen(path, "w"))) {
-    return -1;
+mkdir_if_needed(const char *path) {
+  if(mkdir(path, 0755) == 0) {
+    return 0;
   }
-
-  if (fwrite(data, size, 1, f) != 1) {
-    fclose(f);
-    return -1;
-  }
-
-  fclose(f);
-  return 0;
+  return errno == EEXIST ? 0 : -1;
 }
 
 static int
-install_app(const char* title_id, const char* dir) {
-  int (*sceAppInstUtilAppInstallTitleDir)(const char*, const char*, void*) = 0;
-  const char* nid = "Wudg3Xe3heE";
-  uint32_t handle;
-
-  if (!kernel_dynlib_handle(-1, "libSceAppInstUtil.sprx", &handle)) {
-    sceAppInstUtilAppInstallTitleDir = (void*)kernel_dynlib_resolve(-1, handle, nid);
+write_file(const char *path, const uint8_t *data, size_t size) {
+  FILE *file = fopen(path, "wb");
+  if(!file) {
+    return -1;
   }
 
-  if (sceAppInstUtilAppInstallTitleDir) {
-    return sceAppInstUtilAppInstallTitleDir(title_id, dir, 0);
+  size_t written = fwrite(data, 1, size, file);
+  int close_result = fclose(file);
+  return written == size && close_result == 0 ? 0 : -1;
+}
+
+static int
+install_launcher(void) {
+  int (*install_title_dir)(const char *, const char *, void *) = NULL;
+  uint32_t handle = 0;
+
+  if(kernel_dynlib_handle(-1, "libSceAppInstUtil.sprx", &handle) == 0) {
+    install_title_dir =
+        (void *)kernel_dynlib_resolve(-1, handle, "Wudg3Xe3heE");
   }
 
-  return sceAppInstUtilAppInstallAll(0);
+  if(install_title_dir) {
+    return install_title_dir(TITLE_ID, APP_PARENT, NULL);
+  }
+
+  return sceAppInstUtilAppInstallAll(NULL);
 }
 
 int
-main(int argc, char *argv[]) {
-  int err;
-
-  if ((err = sceAppInstUtilInitialize())) {
-    printf("sceAppInstUtilInitialize: error 0x%08X\n", err);
-    return -1;
+main(void) {
+  int result = sceAppInstUtilInitialize();
+  if(result != 0) {
+    printf("sceAppInstUtilInitialize: error 0x%08X\n", result);
+    return 1;
   }
 
-  /* wipe any previous install of this title so updates don't collide */
+  /* Remove a previous registration before refreshing its metadata/assets. */
   sceAppInstUtilAppUnInstall(TITLE_ID);
 
-  if (mkdir("/user/app/" TITLE_ID, 0755)) {
-    perror("mkdir");
-    return -1;
+  if(mkdir_if_needed(APP_DIR) != 0 || mkdir_if_needed(SCE_SYS_DIR) != 0) {
+    perror("mkdir launcher");
+    return 1;
   }
 
-  if (mkdir("/user/app/" TITLE_ID "/sce_sys", 0755)) {
-    perror("mkdir");
-    return -1;
+  if(write_file(SCE_SYS_DIR "/param.json", launcher_param,
+                launcher_param_size) != 0) {
+    perror("write param.json");
+    return 1;
   }
 
-  if (install_file("/user/app/" TITLE_ID "/eboot.elf", payload, payload_size)) {
-    perror("install_file eboot.elf");
-    return -1;
+  if(write_file(SCE_SYS_DIR "/icon0.png", launcher_icon,
+                launcher_icon_size) != 0) {
+    perror("write icon0.png");
+    return 1;
   }
 
-  if (install_file("/user/app/" TITLE_ID "/sce_sys/icon0.png", icon0, icon0_size)) {
-    perror("install_file icon0.png");
-    return -1;
+  result = install_launcher();
+  if(result != 0) {
+    printf("install launcher: error 0x%08X\n", result);
+    return 1;
   }
 
-  if (install_file("/user/app/" TITLE_ID "/sce_sys/param.json", param, param_size)) {
-    perror("install_file param.json");
-    return -1;
-  }
-
-  if ((err = install_app(TITLE_ID, "/user/app/"))) {
-    printf("install_app: error 0x%08X\n", err);
-    return -1;
-  }
-
-  printf("[ps5-store-installer] tile installed as %s\n", TITLE_ID);
+  printf("[ezhelit-store] launcher %s installed\n", TITLE_ID);
+  printf("[ezhelit-store] deeplink: http://192.168.15.122:5911/\n");
   return 0;
 }

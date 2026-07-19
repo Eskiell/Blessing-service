@@ -2,18 +2,20 @@ ifeq ($(PS5_PAYLOAD_SDK),)
 $(error PS5_PAYLOAD_SDK is undefined. export PS5_PAYLOAD_SDK=/path/to/sdk)
 endif
 
-CC      := $(PS5_PAYLOAD_SDK)/bin/prospero-clang
-CFLAGS  := -Wall -Wextra -O2 -std=c17
-LDFLAGS := -lSceAppInstUtil
+include $(PS5_PAYLOAD_SDK)/toolchain/prospero.mk
 
-APP := ps5-store-install.elf
+APP := ezhelit-store-installer.elf
 SRC := install.c
+ASSETS := param.json icon0.png
+CFLAGS := -Wall -Wextra -Werror -Os -std=c17
+LDFLAGS :=
+LDLIBS := -lSceAppInstUtil
 
 all: $(APP)
 
-# depends on ../ps5-store.elf - build that first (top-level make)
-$(APP): $(SRC) ../ps5-store.elf assets/param.json assets/icon0.png
-	$(CC) $(CFLAGS) -o $@ $(SRC) $(LDFLAGS)
+$(APP): $(SRC) $(ASSETS)
+	"$(CC)" $(CFLAGS) $(LDFLAGS) -o $@ $(SRC) $(LDLIBS)
+	"$(STRIP)" --strip-all $@
 
 clean:
 	rm -f $(APP)

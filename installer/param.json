@@ -1,19 +1,14 @@
 {
-  "attribute": 0,
-  "attribute2": 0,
-  "category": "gd",
-  "titleId": "HBST00001",
-  "contentId": "IV0000-HBST00001_00-PS5STORE0000001",
-  "masterVersion": "01.00",
-  "appVer": "01.00",
-  "systemVer": "10.000.000",
+  "applicationCategoryType": 0,
+  "titleId": "EZST00001",
+  "deeplinkUri": "http://192.168.15.122:5911/",
   "localizedParameters": {
-    "defaultLanguage": "en-US",
-    "en-US": {
-      "titleName": "Minha Loja PS5"
-    },
+    "defaultLanguage": "pt-BR",
     "pt-BR": {
-      "titleName": "Minha Loja PS5"
+      "titleName": "EZHELIT Store"
+    },
+    "en-US": {
+      "titleName": "EZHELIT Store"
     }
   }
 }
