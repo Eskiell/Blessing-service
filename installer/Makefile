@@ -5,7 +5,6 @@ endif
 include $(PS5_PAYLOAD_SDK)/toolchain/prospero.mk
 
 APP := ezhelit-store-installer.elf
-NOTIFY_TEST := ezhelit-notify-test.elf
 SRC := install.c
 ASSETS := param.json icon0.png
 CFLAGS := -Wall -Wextra -Werror -Os -std=c17
@@ -14,15 +13,10 @@ LDLIBS := -lSceNetCtl -lSceUserService -lSceSystemService -lSceAppInstUtil
 
 all: $(APP)
 
-notify-test: $(NOTIFY_TEST)
-
 $(APP): $(SRC) $(ASSETS)
 	"$(CC)" $(CFLAGS) $(LDFLAGS) -o $@ $(SRC) $(LDLIBS)
 
-$(NOTIFY_TEST): notify-test.c
-	"$(CC)" $(CFLAGS) -o $@ $<
-
 clean:
-	rm -f $(APP) $(NOTIFY_TEST)
+	rm -f $(APP)
 
-.PHONY: all clean notify-test
+.PHONY: all clean
