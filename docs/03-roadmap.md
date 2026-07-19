@@ -2,12 +2,17 @@
 
 ## Fase 1 — Launcher em Media
 
-- criar `param.json` com o deeplink;
-- adicionar ícone;
-- compilar o instalador separado;
-- registrar o tile no PS5;
-- confirmar que o tile abre `http://192.168.15.122:5911/`;
-- confirmar que o app instalado não contém ELF.
+Status: concluída e validada no PS5 em 19 de julho de 2026.
+
+- [x] criar `param.json` com o deeplink;
+- [x] adicionar ícone;
+- [x] compilar o instalador separado;
+- [x] registrar o tile na área Media do PS5;
+- [x] confirmar nome, ícone e metadados;
+- [x] confirmar que o app instalado não contém ELF;
+- [x] abrir o launcher no console real.
+
+O registro correto em Media depende de `applicationCategoryType: 65536` e da inicialização dos serviços de rede, usuário e `AppInstUtil`, seguindo o fluxo do Payload Manager.
 
 ## Fase 2 — Tela servida pela rede
 
