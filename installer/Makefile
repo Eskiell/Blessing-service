@@ -9,7 +9,7 @@ SRC := install.c
 ASSETS := param.json icon0.png
 CFLAGS := -Wall -Wextra -Werror -Os -std=c17
 LDFLAGS :=
-LDLIBS := -lSceAppInstUtil
+LDLIBS :=
 
 all: $(APP)
 
