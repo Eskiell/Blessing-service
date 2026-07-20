@@ -5,7 +5,7 @@
 Este teste baixa somente:
 
 ```text
-http://10.0.0.137:8080/ezhelit.exfat.png
+http://192.168.15.125:8080/ezhelit.exfat.png
 ```
 
 para:
@@ -18,9 +18,9 @@ Não instala, monta, abre ou interpreta o arquivo.
 
 ## Pré-requisitos
 
-1. O arquivo responde em `10.0.0.137:8080`.
+1. O arquivo responde em `192.168.15.125:8080`.
 2. A resposta HTTP inclui `Content-Length`.
-3. O PS5 consegue alcançar a rede `10.0.0.0`.
+3. O PS5 consegue alcançar `192.168.15.125:8080` na rede local.
 4. O tile EZHELIT Store já está instalado.
 5. Nenhum payload anterior está usando a porta `5911`.
 
@@ -47,7 +47,7 @@ Ele só é renomeado quando a quantidade recebida corresponde ao `Content-Length
 
 ## Resultados possíveis
 
-- `Conectando...`: tentando alcançar `10.0.0.137:8080`.
+- `Conectando...`: tentando alcançar `192.168.15.125:8080`.
 - `Baixando...`: resposta aceita e arquivo sendo gravado.
 - `Download concluido`: tamanho recebido corresponde ao esperado.
 - `Download falhou`: a tela mostra o motivo básico.

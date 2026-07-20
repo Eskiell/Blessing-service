@@ -2,7 +2,7 @@
  * EZHELIT Store - minimal persistent download experiment.
  *
  * UI:       http://<PS5-IP>:5911/
- * Source:   http://10.0.0.137:8080/ezhelit.exfat.png
+ * Source:   http://192.168.15.125:8080/ezhelit.exfat.png
  * Output:   /data/ezhelit-store/downloads/ezhelit.exfat.png
  *
  * The HTTP server and download worker live in the payload. Closing the web UI
@@ -28,10 +28,10 @@
 #define REQUEST_SIZE 4096
 #define IO_BUFFER_SIZE 65536
 
-#define DOWNLOAD_HOST "10.0.0.137"
+#define DOWNLOAD_HOST "192.168.15.125"
 #define DOWNLOAD_PORT 8080
 #define DOWNLOAD_PATH "/ezhelit.exfat.png"
-#define DOWNLOAD_URL "http://10.0.0.137:8080/ezhelit.exfat.png"
+#define DOWNLOAD_URL "http://192.168.15.125:8080/ezhelit.exfat.png"
 
 #define DATA_DIR "/data/ezhelit-store"
 #define DOWNLOAD_DIR DATA_DIR "/downloads"
