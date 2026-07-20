@@ -1,0 +1,65 @@
+# Teste prático de download
+
+## Escopo
+
+Este teste baixa somente:
+
+```text
+http://10.0.0.137:8080/ezhelit.exfat.png
+```
+
+para:
+
+```text
+/data/ezhelit-store/downloads/ezhelit.exfat.png
+```
+
+Não instala, monta, abre ou interpreta o arquivo.
+
+## Pré-requisitos
+
+1. O arquivo responde em `10.0.0.137:8080`.
+2. A resposta HTTP inclui `Content-Length`.
+3. O PS5 consegue alcançar a rede `10.0.0.0`.
+4. O tile EZHELIT Store já está instalado.
+5. Nenhum payload anterior está usando a porta `5911`.
+
+## Procedimento
+
+1. Enviar `ezhelit-store.elf` para o loader na porta `9021`.
+2. Aguardar a notificação `EZHELIT Store pronta em http://127.0.0.1:5911/`.
+3. Abrir o tile EZHELIT Store em Media.
+4. Selecionar `Baixar arquivo de teste`.
+5. Confirmar que o percentual começa a avançar.
+6. Fechar a tela da Store sem reenviar ou encerrar o payload.
+7. Aguardar alguns segundos.
+8. Abrir o tile novamente.
+9. Confirmar que o progresso avançou ou terminou.
+10. Conferir por FTP se o arquivo final existe no destino.
+
+Durante a transferência, o arquivo usa a extensão temporária:
+
+```text
+/data/ezhelit-store/downloads/ezhelit.exfat.png.part
+```
+
+Ele só é renomeado quando a quantidade recebida corresponde ao `Content-Length` informado pelo servidor.
+
+## Resultados possíveis
+
+- `Conectando...`: tentando alcançar `10.0.0.137:8080`.
+- `Baixando...`: resposta aceita e arquivo sendo gravado.
+- `Download concluido`: tamanho recebido corresponde ao esperado.
+- `Download falhou`: a tela mostra o motivo básico.
+
+## Limites deste protótipo
+
+- URL fixa no código;
+- apenas HTTP, sem HTTPS;
+- sem redirects;
+- exige `Content-Length`;
+- um download por vez;
+- sem SHA-256;
+- sem retomada após reiniciar o payload ou console;
+- estado somente em memória;
+- sobrescreve o arquivo temporário ao iniciar uma nova tentativa.

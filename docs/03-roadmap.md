@@ -16,7 +16,7 @@ O registro correto em Media depende de `applicationCategoryType: 65536` e da ini
 
 ## Fase 2 — Tela servida pela rede
 
-- criar a interface do catálogo no servidor;
+- evoluir `src/main.c` para servir os assets da interface;
 - adaptar o visual para TV e controle;
 - mostrar estados de carregamento e indisponibilidade;
 - validar o comportamento no PS5.
@@ -30,11 +30,13 @@ O registro correto em Media depende de `applicationCategoryType: 65536` e da ini
 
 ## Fase 4 — Transferência
 
-- definir um worker no PS5;
+- implementar um worker residente no payload do PS5;
 - verificar espaço livre e destino;
 - transferir com progresso e retomada;
 - validar integridade;
 - manter transferência separada de montagem ou instalação.
+
+Detalhes: [05-plano-catalogo-e-downloads.md](./05-plano-catalogo-e-downloads.md).
 
 ## Decisões futuras
 
