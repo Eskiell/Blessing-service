@@ -1,5 +1,17 @@
 # Teste prático de download
 
+## Resultado
+
+Status: concluído com sucesso no PS5.
+
+- Origem validada: `http://192.168.15.125:8080/ezhelit.exfat.png`.
+- O payload serviu a interface na porta `5911`.
+- O download foi iniciado pela tela da Store.
+- O arquivo foi baixado e salvo no armazenamento interno.
+- O fluxo com arquivo temporário e destino final funcionou.
+
+Esta validação comprova o experimento básico. Hash, retomada após reinício e catálogo dinâmico continuam como etapas posteriores.
+
 ## Escopo
 
 Este teste baixa somente:

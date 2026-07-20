@@ -30,6 +30,8 @@ O registro correto em Media depende de `applicationCategoryType: 65536` e da ini
 
 ## Fase 4 — Transferência
 
+Prova inicial concluída: download HTTP fixo executado por worker no payload e arquivo salvo com sucesso no armazenamento interno do PS5.
+
 - implementar um worker residente no payload do PS5;
 - verificar espaço livre e destino;
 - transferir com progresso e retomada;

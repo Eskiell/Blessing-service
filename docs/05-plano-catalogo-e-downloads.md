@@ -239,3 +239,7 @@ O download sobrevive ao fechamento da interface enquanto o payload continuar exe
 ## Critério de sucesso desta etapa
 
 O planejamento estará provado quando um arquivo pequeno puder ser solicitado pela Store, continuar baixando após a tela ser fechada, aparecer com progresso ao reabrir o tile e terminar com tamanho e SHA-256 válidos.
+
+## Validação parcial realizada
+
+O primeiro download controlado foi concluído e salvo com sucesso usando `192.168.15.125:8080`. Isso valida conectividade, worker, escrita em `.part`, verificação por tamanho e renomeação final. SHA-256, persistência após reinício e catálogo JSON ainda não foram validados.
