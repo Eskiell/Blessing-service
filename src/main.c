@@ -40,6 +40,24 @@
 #define PART_PATH DOWNLOAD_DIR "/ezhelit.exfat.png.part"
 #define FINAL_PATH DOWNLOAD_DIR "/ezhelit.exfat.png"
 
+#ifndef UI_ASSET_PATH
+#define UI_ASSET_PATH "frontend/dist/index.html"
+#endif
+
+#define INCASSET(name, file)                                                  \
+  __asm__(".section .rodata\n"                                                \
+          ".global " #name "\n"                                               \
+          ".global " #name "_end\n"                                           \
+          ".global " #name "_size\n"                                          \
+          ".align 16\n" #name ":\n"                                           \
+          ".incbin \"" file "\"\n" #name "_end:\n" #name "_size:\n"           \
+          ".quad " #name "_end - " #name "\n"                                 \
+          ".previous\n");                                                     \
+  extern const uint8_t name[];                                                \
+  extern const size_t name##_size
+
+INCASSET(frontend_index, UI_ASSET_PATH);
+
 typedef enum download_state {
   DOWNLOAD_IDLE,
   DOWNLOAD_CONNECTING,
@@ -72,35 +90,6 @@ notify(const char *message) {
   snprintf(request.message, sizeof(request.message), "%s", message);
   sceKernelSendNotificationRequest(0, &request, sizeof(request), 0);
 }
-
-static const char *HTML_PAGE =
-    "<!doctype html>"
-    "<html lang='pt-BR'><head><meta charset='utf-8'>"
-    "<meta name='viewport' content='width=device-width,initial-scale=1'>"
-    "<title>EZHELIT Store</title><style>"
-    "body{margin:0;background:#0b1020;color:#fff;font-family:sans-serif;"
-    "display:flex;align-items:center;justify-content:center;height:100vh}"
-    ".box{width:720px;text-align:center}h1{font-size:48px;margin:0 0 36px}"
-    "button{font-size:28px;padding:18px 34px;border:0;border-radius:12px;"
-    "background:#2684ff;color:#fff}#status{font-size:24px;margin-top:28px}"
-    "#detail{font-size:18px;color:#aeb9ce;margin-top:12px}"
-    "</style></head><body><main class='box'>"
-    "<h1>EZHELIT Store</h1>"
-    "<button id='start'>Baixar arquivo de teste</button>"
-    "<div id='status'>Aguardando</div><div id='detail'></div>"
-    "</main><script>"
-    "const statusEl=document.getElementById('status');"
-    "const detailEl=document.getElementById('detail');"
-    "document.getElementById('start').onclick=async()=>{"
-    " await fetch('/api/v1/test-download',{method:'POST'}); refresh();};"
-    "async function refresh(){try{const r=await fetch('/api/v1/test-download/status');"
-    "const s=await r.json();statusEl.textContent=s.label;"
-    "const p=s.totalBytes?Math.floor(s.receivedBytes*100/s.totalBytes):0;"
-    "detailEl.textContent=s.error||"
-    "(s.state==='downloading'?p+'% — '+s.receivedBytes+' / '+s.totalBytes+' bytes':'');"
-    "}catch(e){statusEl.textContent='Falha ao consultar o payload';}}"
-    "setInterval(refresh,1000);refresh();"
-    "</script></body></html>";
 
 static void
 set_status(download_state_t state, uint64_t received, uint64_t total,
@@ -336,10 +325,9 @@ state_label(download_state_t state) {
 }
 
 static void
-respond(int client_fd, int status, const char *content_type,
-        const char *body) {
+respond_data(int client_fd, int status, const char *content_type,
+             const void *body, size_t body_size) {
   char header[512];
-  size_t body_size = strlen(body);
   int header_size = snprintf(
       header, sizeof(header),
       "HTTP/1.1 %d %s\r\nContent-Type: %s\r\nContent-Length: %zu\r\n"
@@ -347,6 +335,12 @@ respond(int client_fd, int status, const char *content_type,
       status, status == 200 ? "OK" : "Error", content_type, body_size);
   send_all(client_fd, header, (size_t)header_size);
   send_all(client_fd, body, body_size);
+}
+
+static void
+respond(int client_fd, int status, const char *content_type,
+        const char *body) {
+  respond_data(client_fd, status, content_type, body, strlen(body));
 }
 
 static void
@@ -384,7 +378,8 @@ handle_client(int client_fd) {
     respond(client_fd, 200, "application/json; charset=utf-8",
             "{\"status\":\"ok\"}");
   } else if(strncmp(request, "GET / ", 6) == 0) {
-    respond(client_fd, 200, "text/html; charset=utf-8", HTML_PAGE);
+    respond_data(client_fd, 200, "text/html; charset=utf-8", frontend_index,
+                 frontend_index_size);
   } else {
     respond(client_fd, 404, "application/json; charset=utf-8",
             "{\"error\":\"not_found\"}");

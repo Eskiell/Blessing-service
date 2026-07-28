@@ -10,6 +10,7 @@ Esta pasta concentra o entendimento e o planejamento do projeto antes de novas a
 - [04-plano-de-desenvolvimento.md](./04-plano-de-desenvolvimento.md): sequência simples de implementação e validação.
 - [05-plano-catalogo-e-downloads.md](./05-plano-catalogo-e-downloads.md): catálogo local, API do payload e downloads persistentes.
 - [06-teste-download.md](./06-teste-download.md): roteiro do primeiro download controlado no PS5.
+- [07-teste-vue.md](./07-teste-vue.md): validação do frontend Vue e procedimento de rollback.
 
 ## Regra de trabalho
 

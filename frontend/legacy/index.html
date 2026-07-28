@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>EZHELIT Store</title>
+    <style>
+      body{margin:0;background:#0b1020;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh}
+      .box{width:720px;text-align:center}
+      h1{font-size:48px;margin:0 0 36px}
+      button{font-size:28px;padding:18px 34px;border:0;border-radius:12px;background:#2684ff;color:#fff}
+      #status{font-size:24px;margin-top:28px}
+      #detail{font-size:18px;color:#aeb9ce;margin-top:12px}
+    </style>
+  </head>
+  <body>
+    <main class="box">
+      <h1>EZHELIT Store</h1>
+      <button id="start">Baixar arquivo de teste</button>
+      <div id="status">Aguardando</div>
+      <div id="detail"></div>
+    </main>
+    <script>
+      const statusEl=document.getElementById('status');
+      const detailEl=document.getElementById('detail');
+      document.getElementById('start').onclick=async()=>{await fetch('/api/v1/test-download',{method:'POST'});refresh();};
+      async function refresh(){try{const r=await fetch('/api/v1/test-download/status');const s=await r.json();statusEl.textContent=s.label;const p=s.totalBytes?Math.floor(s.receivedBytes*100/s.totalBytes):0;detailEl.textContent=s.error||(s.state==='downloading'?p+'% — '+s.receivedBytes+' / '+s.totalBytes+' bytes':'');}catch(e){statusEl.textContent='Falha ao consultar o payload';}}
+      setInterval(refresh,1000);refresh();
+    </script>
+  </body>
+</html>
