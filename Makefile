@@ -5,22 +5,20 @@ endif
 include $(PS5_PAYLOAD_SDK)/toolchain/prospero.mk
 
 PAYLOAD := ezhelit-store.elf
-PAYLOAD_SRC := src/main.c
+PAYLOAD_SRC := src/main.c src/app_installer.c
 PAYLOAD_CFLAGS := -Wall -Wextra -Werror -Os -std=c17
-PAYLOAD_LIBS := -lpthread
+PAYLOAD_LIBS := -lpthread -lSceNetCtl -lSceUserService -lSceSystemService -lSceAppInstUtil
+LAUNCHER_ASSETS := installer/param.json installer/icon0.png
 
-all: payload installer
+all: payload
 
 payload: $(PAYLOAD)
 
-$(PAYLOAD): $(PAYLOAD_SRC)
-	"$(CC)" $(PAYLOAD_CFLAGS) -o $@ $< $(PAYLOAD_LIBS)
-
-installer:
-	$(MAKE) -C installer
+$(PAYLOAD): $(PAYLOAD_SRC) $(LAUNCHER_ASSETS)
+	"$(CC)" $(PAYLOAD_CFLAGS) -o $@ $(PAYLOAD_SRC) $(PAYLOAD_LIBS)
 
 clean:
 	rm -f $(PAYLOAD)
-	$(MAKE) -C installer clean
+	rm -f installer/ezhelit-store-installer.elf
 
-.PHONY: all payload installer clean
+.PHONY: all payload clean

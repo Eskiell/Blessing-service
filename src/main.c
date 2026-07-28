@@ -23,6 +23,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "app_installer.h"
+
 #define LISTEN_PORT 5911
 #define BACKLOG 8
 #define REQUEST_SIZE 4096
@@ -392,6 +394,12 @@ handle_client(int client_fd) {
 
 int
 main(void) {
+  /*
+   * The launcher is now part of this payload's startup. Installation failure
+   * is non-fatal: the server remains usable through the PS5 IP and port 5911.
+   */
+  app_install_if_needed();
+
   signal(SIGPIPE, SIG_IGN);
 
   int server_fd = socket(AF_INET, SOCK_STREAM, 0);

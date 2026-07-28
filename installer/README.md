@@ -1,27 +1,13 @@
-# Instalador do launcher EZHELIT Store
+# Assets do launcher EZHELIT Store
 
-Este instalador registra um tile na área Media do PS5. O tile contém somente:
+Esta pasta contém os assets embutidos no payload único:
 
 - `sce_sys/param.json`, com o deeplink `http://192.168.15.122:5911/`;
 - `sce_sys/icon0.png`.
 
-O launcher instalado não contém, inicia, copia ou atualiza um `eboot.elf`. Ao
-ser selecionado, o sistema abre o deeplink e espera que o servidor já esteja
-disponível na rede local.
+Não existe mais um instalador separado. `src/app_installer.c` incorpora estes
+arquivos em `ezhelit-store.elf`, registra o tile se necessário e então
+`src/main.c` continua executando o servidor e o worker.
 
-## Build
-
-```sh
-export PS5_PAYLOAD_SDK=/caminho/para/ps5-payload-sdk
-make
-```
-
-O resultado é `installer/ezhelit-store-installer.elf`.
-
-## Instalação
-
-Execute o instalador uma vez pelo Payload Manager. O ELF é apenas a ferramenta
-de registro do tile; ele não faz parte do app instalado.
-
-Antes de abrir o tile, confirme que `http://192.168.15.122:5911/` responde na
-mesma rede do PS5.
+O launcher gravado em `/user/app/EZST00001` ainda contém apenas `param.json` e
+`icon0.png`; o payload permanece separado e é iniciado pelo loader.

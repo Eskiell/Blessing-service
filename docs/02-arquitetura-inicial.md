@@ -26,9 +26,15 @@ Servidor local entrega toda a tela
 
 Não existe `eboot.elf` dentro do launcher.
 
-## Instalação
+## Inicialização e instalação
 
-Um instalador ELF separado é executado uma vez pelo Payload Manager. Sua única função é gravar os dois assets e registrar o tile com `libSceAppInstUtil`. Esse instalador não é incluído no launcher e não copia outro ELF para `/user/app`.
+Existe somente `ezhelit-store.elf`. Ao iniciar, ele verifica se os assets do
+tile já estão atualizados. Quando necessário, grava `param.json` e `icon0.png`
+e registra o título por `libSceAppInstUtil`. Em seguida, o mesmo processo
+continua executando o servidor e o worker.
+
+O ELF não é copiado para `/user/app`; o tile instalado continua contendo apenas
+os dois assets.
 
 ## Servidor
 

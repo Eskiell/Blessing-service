@@ -2,10 +2,10 @@
 
 ## Agora
 
-1. Compilar o instalador do tile.
-2. Executá-lo uma vez pelo Payload Manager.
-3. Confirmar que `EZHELIT Store` aparece em Media.
-4. Manter `http://192.168.15.122:5911/` ativo.
+1. Compilar o único `ezhelit-store.elf`.
+2. Executá-lo pelo loader/Payload Manager.
+3. Confirmar que ele instala ou preserva o tile em Media.
+4. Confirmar a notificação de serviço ativo na porta `5911`.
 5. Abrir o tile e confirmar que a tela do servidor é exibida.
 
 ## Depois da validação do launcher

@@ -1,23 +1,27 @@
 # EZHELIT Store
 
-O projeto contém um launcher na área Media do PS5 que abre:
+O projeto gera um único payload:
 
 ```text
-http://192.168.15.122:5911/
+ezhelit-store.elf
 ```
 
-O servidor deve estar ativo na rede local antes de o tile ser aberto.
+Ao ser enviado para o PS5, ele:
 
-O launcher:
+- instala ou atualiza o tile `EZHELIT Store` na área Media;
+- embute `param.json` e `icon0.png`;
+- inicia o servidor HTTP na porta `5911`;
+- serve a interface da Store;
+- mantém o worker de download em execução quando a tela é fechada.
 
-- não sobe servidor HTTP;
-- não contém um `eboot.elf`;
-- não copia ou manipula payloads ELF;
-- não lista, transfere, instala ou monta jogos.
+O tile instalado não contém `eboot.elf`; ele abre o servidor mantido pelo
+payload em `http://192.168.15.122:5911/`.
 
-O payload experimental `ezhelit-store.elf` serve uma tela mínima nessa porta e
-testa um download persistente enquanto o payload estiver em execução. Ele é
-separado do launcher e não é instalado dentro do tile.
+## Build
 
-Consulte [docs](./docs/README.md) para o planejamento e
-[installer/README.md](./installer/README.md) para build e instalação.
+```sh
+export PS5_PAYLOAD_SDK=/caminho/para/ps5-payload-sdk
+make
+```
+
+Consulte [docs](./docs/README.md) para o planejamento.

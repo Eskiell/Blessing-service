@@ -6,13 +6,17 @@ Status: concluída e validada no PS5 em 19 de julho de 2026.
 
 - [x] criar `param.json` com o deeplink;
 - [x] adicionar ícone;
-- [x] compilar o instalador separado;
+- [x] incorporar a instalação do tile ao payload principal;
 - [x] registrar o tile na área Media do PS5;
 - [x] confirmar nome, ícone e metadados;
 - [x] confirmar que o app instalado não contém ELF;
 - [x] abrir o launcher no console real.
 
 O registro correto em Media depende de `applicationCategoryType: 65536` e da inicialização dos serviços de rede, usuário e `AppInstUtil`, seguindo o fluxo do Payload Manager.
+
+Em 28 de julho de 2026, instalador e serviço foram unificados em um único
+`ezhelit-store.elf`, seguindo o comportamento observado no PS5 Web File
+Manager.
 
 ## Fase 2 — Tela servida pela rede
 

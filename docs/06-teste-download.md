@@ -33,12 +33,12 @@ Não instala, monta, abre ou interpreta o arquivo.
 1. O arquivo responde em `192.168.15.125:8080`.
 2. A resposta HTTP inclui `Content-Length`.
 3. O PS5 consegue alcançar `192.168.15.125:8080` na rede local.
-4. O tile EZHELIT Store já está instalado.
+4. O payload pode instalar o tile automaticamente caso ele ainda não exista.
 5. Nenhum payload anterior está usando a porta `5911`.
 
 ## Procedimento
 
-1. Enviar `ezhelit-store.elf` para o loader na porta `9021`.
+1. Enviar o único `ezhelit-store.elf` para o loader na porta `9021`.
 2. Aguardar a notificação `EZHELIT Store pronta em http://127.0.0.1:5911/`.
 3. Abrir o tile EZHELIT Store em Media.
 4. Selecionar `Baixar arquivo de teste`.
