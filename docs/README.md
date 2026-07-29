@@ -11,6 +11,7 @@ Esta pasta concentra o entendimento e o planejamento do projeto antes de novas a
 - [05-plano-catalogo-e-downloads.md](./05-plano-catalogo-e-downloads.md): catálogo local, API do payload e downloads persistentes.
 - [06-teste-download.md](./06-teste-download.md): roteiro do primeiro download controlado no PS5.
 - [07-teste-vue.md](./07-teste-vue.md): validação do frontend Vue e procedimento de rollback.
+- [08-plano-frontend.md](./08-plano-frontend.md): telas, navegação pelo controle e evolução incremental do frontend.
 
 ## Regra de trabalho
 

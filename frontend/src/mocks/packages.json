@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "catalog": {
+    "id": "ezhelit-local",
+    "name": "EZHELIT Store",
+    "updatedAt": "2026-07-28T12:00:00Z"
+  },
+  "packages": [
+    {
+      "id": "astro-racers-cusa00001-1.00",
+      "titleId": "CUSA00001",
+      "title": "Astro Racers",
+      "description": "Uma corrida espacial fictícia criada para validar o catálogo da EZHELIT Store.",
+      "version": "1.00",
+      "format": "exfat",
+      "sizeBytes": 12884901888,
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "coverUrl": "/api/v1/assets/covers/CUSA00001.jpg",
+      "downloadLinks": [
+        {
+          "id": "local-primary",
+          "name": "Servidor local",
+          "type": "regular",
+          "url": "/downloads/astro-racers.exfat"
+        }
+      ]
+    },
+    {
+      "id": "neon-drift-cusa00002-1.04",
+      "titleId": "CUSA00002",
+      "title": "Neon Drift",
+      "description": "Corridas noturnas em uma cidade futurista fictícia.",
+      "version": "1.04",
+      "format": "exfat",
+      "sizeBytes": 23622320128,
+      "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "coverUrl": "/api/v1/assets/covers/CUSA00002.jpg",
+      "downloadLinks": [
+        {
+          "id": "local-primary",
+          "name": "Servidor local",
+          "type": "regular",
+          "url": "/downloads/neon-drift.exfat"
+        }
+      ]
+    },
+    {
+      "id": "forgotten-realms-cusa00003-2.10",
+      "titleId": "CUSA00003",
+      "title": "Forgotten Realms",
+      "description": "Uma aventura fictícia por ruínas, florestas e cidades antigas.",
+      "version": "2.10",
+      "format": "exfat",
+      "sizeBytes": 48318382080,
+      "sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "coverUrl": "/api/v1/assets/covers/CUSA00003.jpg",
+      "downloadLinks": [
+        {
+          "id": "local-primary",
+          "name": "Servidor local",
+          "type": "regular",
+          "url": "/downloads/forgotten-realms.exfat"
+        },
+        {
+          "id": "local-backup",
+          "name": "Servidor reserva",
+          "type": "premium",
+          "url": "/mirror/forgotten-realms.exfat"
+        }
+      ]
+    },
+    {
+      "id": "pixel-legends-cusa00004-1.01",
+      "titleId": "CUSA00004",
+      "title": "Pixel Legends",
+      "description": "Ação e plataforma em um universo retrô fictício.",
+      "version": "1.01",
+      "format": "exfat",
+      "sizeBytes": 4294967296,
+      "sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+      "coverUrl": "/api/v1/assets/covers/CUSA00004.jpg",
+      "downloadLinks": [
+        {
+          "id": "local-primary",
+          "name": "Servidor local",
+          "type": "regular",
+          "url": "/downloads/pixel-legends.exfat"
+        }
+      ]
+    },
+    {
+      "id": "shadow-protocol-cusa00005-1.20",
+      "titleId": "CUSA00005",
+      "title": "Shadow Protocol",
+      "description": "Uma missão de infiltração fictícia para testar textos e capas.",
+      "version": "1.20",
+      "format": "exfat",
+      "sizeBytes": 35433480192,
+      "sha256": "5555555555555555555555555555555555555555555555555555555555555555",
+      "coverUrl": "/api/v1/assets/covers/CUSA00005.jpg",
+      "downloadLinks": [
+        {
+          "id": "local-primary",
+          "name": "Servidor local",
+          "type": "regular",
+          "url": "/downloads/shadow-protocol.exfat"
+        }
+      ]
+    },
+    {
+      "id": "tiny-kingdom-cusa00006-3.00",
+      "titleId": "CUSA00006",
+      "title": "Tiny Kingdom",
+      "description": "Estratégia fictícia em um pequeno reino cheio de personagens.",
+      "version": "3.00",
+      "format": "exfat",
+      "sizeBytes": 8589934592,
+      "sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+      "coverUrl": "/api/v1/assets/covers/CUSA00006.jpg",
+      "downloadLinks": [
+        {
+          "id": "local-primary",
+          "name": "Servidor local",
+          "type": "regular",
+          "url": "/downloads/tiny-kingdom.exfat"
+        }
+      ]
+    }
+  ]
+}

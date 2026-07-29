@@ -100,6 +100,7 @@ Resposta proposta:
         {
           "id": "local-primary",
           "name": "Servidor local",
+          "type": "regular",
           "url": "/downloads/example-package.exfat"
         }
       ]
@@ -116,6 +117,7 @@ Campos importantes acrescentados ao exemplo original:
 - `sha256`: necessário para validar a integridade;
 - `format`: evita inferir o formato apenas pela extensão;
 - `updatedAt`: ajuda no cache e atualização do catálogo.
+- `downloadLinks[].type`: classifica a origem como `regular` ou `premium`.
 
 URLs relativas são preferíveis quando capas e arquivos estão no mesmo servidor do catálogo. O servidor ou o worker as resolve usando a URL-base configurada.
 
