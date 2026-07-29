@@ -1,11 +1,20 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+} from 'vue'
 import catalogData from './mocks/packages.json'
 
 const packages = ref(catalogData.packages)
 const catalog = ref(catalogData.catalog)
 const catalogState = ref('ready')
 const requestError = ref('')
+const selectedPackage = ref(null)
+const selectedIndex = ref(-1)
+const cardElements = []
 const download = ref({
   state: 'idle',
   label: 'Nenhum download ativo',
@@ -57,6 +66,10 @@ function linkTypes(item) {
   return [...new Set(item.downloadLinks.map((link) => link.type))]
 }
 
+function setCardElement(element, index) {
+  if (element) cardElements[index] = element
+}
+
 async function refreshDownload() {
   try {
     const response = await fetch('/api/v1/test-download/status', {
@@ -83,18 +96,42 @@ async function startTestDownload() {
   }
 }
 
-function selectPackage(item) {
-  // A abertura dos detalhes pertence ao Marco F2.
-  requestError.value = `${item.title} selecionado — detalhes entram na próxima etapa`
+function openDetails(item, index) {
+  selectedPackage.value = item
+  selectedIndex.value = index
+  window.history.pushState({ view: 'details', packageId: item.id }, '')
+  nextTick(() => document.querySelector('.back-button')?.focus())
+}
+
+function closeDetails() {
+  if (!selectedPackage.value) return
+  window.history.back()
+}
+
+function restoreCatalog() {
+  if (!selectedPackage.value) return
+  selectedPackage.value = null
+  nextTick(() => cardElements[selectedIndex.value]?.focus())
+}
+
+function handleKeydown(event) {
+  if (selectedPackage.value && (event.key === 'Escape' || event.keyCode === 27)) {
+    event.preventDefault()
+    closeDetails()
+  }
 }
 
 onMounted(() => {
   refreshDownload()
   timer = window.setInterval(refreshDownload, 1000)
+  window.addEventListener('popstate', restoreCatalog)
+  window.addEventListener('keydown', handleKeydown)
 })
 
 onBeforeUnmount(() => {
   if (timer) window.clearInterval(timer)
+  window.removeEventListener('popstate', restoreCatalog)
+  window.removeEventListener('keydown', handleKeydown)
 })
 </script>
 
@@ -122,7 +159,7 @@ onBeforeUnmount(() => {
       </div>
     </header>
 
-    <section class="content" aria-live="polite">
+    <section v-if="!selectedPackage" class="content" aria-live="polite">
       <div v-if="catalogState === 'loading'" class="empty-state">
         <h2>Carregando catálogo...</h2>
       </div>
@@ -149,10 +186,11 @@ onBeforeUnmount(() => {
           <button
             v-for="(item, index) in packages"
             :key="item.id"
+            :ref="(element) => setCardElement(element, index)"
             class="game-card"
             type="button"
             :style="{ '--card-index': index }"
-            @click="selectPackage(item)"
+            @click="openDetails(item, index)"
           >
             <span class="cover" aria-hidden="true">
               <span class="cover-mark">{{ initials(item.title) }}</span>
@@ -180,6 +218,65 @@ onBeforeUnmount(() => {
       </template>
     </section>
 
+    <section v-else class="details">
+      <button class="back-button" type="button" @click="closeDetails">
+        <span aria-hidden="true">←</span>
+        Voltar ao catálogo
+      </button>
+
+      <div class="details-layout">
+        <div
+          class="details-cover"
+          :style="{ '--card-index': selectedIndex }"
+          aria-hidden="true"
+        >
+          <span>{{ initials(selectedPackage.title) }}</span>
+          <small>{{ selectedPackage.titleId }}</small>
+        </div>
+
+        <div class="details-copy">
+          <p class="eyebrow">{{ selectedPackage.titleId }}</p>
+          <h2>{{ selectedPackage.title }}</h2>
+          <p class="details-description">
+            {{ selectedPackage.description }}
+          </p>
+
+          <dl class="details-metadata">
+            <div>
+              <dt>Versão</dt>
+              <dd>{{ selectedPackage.version }}</dd>
+            </div>
+            <div>
+              <dt>Tamanho</dt>
+              <dd>{{ formatBytes(selectedPackage.sizeBytes) }}</dd>
+            </div>
+            <div>
+              <dt>Formato</dt>
+              <dd>{{ selectedPackage.format }}</dd>
+            </div>
+          </dl>
+
+          <div class="sources">
+            <h3>Origens disponíveis</h3>
+            <div
+              v-for="link in selectedPackage.downloadLinks"
+              :key="link.id"
+              class="source-row"
+            >
+              <span>{{ link.name }}</span>
+              <span class="type-badge" :class="`type-${link.type}`">
+                {{ link.type }}
+              </span>
+            </div>
+          </div>
+
+          <button class="download-disabled" type="button" disabled>
+            Download será conectado na próxima etapa
+          </button>
+        </div>
+      </div>
+    </section>
+
     <aside v-if="downloadVisible" class="download-status">
       <div class="download-copy">
         <strong>{{ requestError || download.label }}</strong>
@@ -194,7 +291,10 @@ onBeforeUnmount(() => {
     </aside>
 
     <footer class="footer">
-      <span><kbd>✕</kbd> Selecionar</span>
+      <span>
+        <kbd>{{ selectedPackage ? '○' : '✕' }}</kbd>
+        {{ selectedPackage ? 'Voltar' : 'Selecionar' }}
+      </span>
       <span>Frontend Vue · catálogo mock v{{ catalogData.schemaVersion }}</span>
     </footer>
   </main>
