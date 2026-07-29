@@ -9,7 +9,7 @@ Usuário seleciona o tile em Media
 PS5 lê o deeplink do param.json
               |
               v
-http://192.168.15.122:5911/
+http://127.0.0.1:5911/
               |
               v
 Servidor local entrega toda a tela
@@ -38,11 +38,11 @@ os dois assets.
 
 ## Servidor
 
-O launcher não testa, inicia ou encerra o servidor. Se `192.168.15.122:5911` estiver indisponível, a tela não poderá ser carregada. O tratamento visual dessa indisponibilidade pertence ao mecanismo que exibe o deeplink e, futuramente, à aplicação servida.
+O launcher não testa, inicia ou encerra o servidor. Se `127.0.0.1:5911` estiver indisponível, a tela não poderá ser carregada. O tratamento visual dessa indisponibilidade pertence ao mecanismo que exibe o deeplink e à aplicação servida.
 
 ## Configuração inicial
 
 - Title ID: `EZST00001`.
 - Nome: `EZHELIT Store`.
-- Deeplink: `http://192.168.15.122:5911/`.
+- Deeplink: `http://127.0.0.1:5911/`.
 - Categoria Media: `applicationCategoryType: 65536`.

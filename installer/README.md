@@ -2,7 +2,7 @@
 
 Esta pasta contém os assets embutidos no payload único:
 
-- `sce_sys/param.json`, com o deeplink `http://192.168.15.122:5911/`;
+- `sce_sys/param.json`, com o deeplink local `http://127.0.0.1:5911/`;
 - `sce_sys/icon0.png`.
 
 Não existe mais um instalador separado. `src/app_installer.c` incorpora estes

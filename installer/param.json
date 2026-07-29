@@ -1,7 +1,7 @@
 {
   "applicationCategoryType": 65536,
   "titleId": "EZST00001",
-  "deeplinkUri": "http://192.168.15.122:5911/",
+  "deeplinkUri": "http://127.0.0.1:5911/",
   "localizedParameters": {
     "defaultLanguage": "pt-BR",
     "pt-BR": {

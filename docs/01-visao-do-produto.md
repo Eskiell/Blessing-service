@@ -5,7 +5,7 @@
 Criar um launcher na área Media do PS5 que abra exclusivamente o endereço:
 
 ```text
-http://192.168.15.122:5911/
+http://127.0.0.1:5911/
 ```
 
 O conteúdo visual vem integralmente do servidor local. O launcher espera que o endereço já esteja disponível e não inicia nenhum serviço.
@@ -26,7 +26,7 @@ O conteúdo visual vem integralmente do servidor local. O launcher espera que o 
 - kstuff, Payload Manager e ShadowMountPlus;
 - HD com backups próprios;
 - jogos descritos atualmente como `.exFAT`;
-- servidor provisório em `192.168.15.122:5911`.
+- servidor local do payload em `127.0.0.1:5911`.
 
 ## Fases futuras
 

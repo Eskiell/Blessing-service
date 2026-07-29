@@ -15,7 +15,7 @@ Ao ser enviado para o PS5, ele:
 - mantém o worker de download em execução quando a tela é fechada.
 
 O tile instalado não contém `eboot.elf`; ele abre o servidor mantido pelo
-payload em `http://192.168.15.122:5911/`.
+payload em `http://127.0.0.1:5911/`.
 
 ## Build
 

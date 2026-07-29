@@ -1,7 +1,7 @@
 /*
  * EZHELIT Store - minimal persistent download experiment.
  *
- * UI:       http://<PS5-IP>:5911/
+ * UI:       http://127.0.0.1:5911/
  * Source:   http://192.168.15.125:8080/ezhelit.exfat.png
  * Output:   /data/ezhelit-store/downloads/ezhelit.exfat.png
  *
@@ -391,7 +391,7 @@ int
 main(void) {
   /*
    * The launcher is now part of this payload's startup. Installation failure
-   * is non-fatal: the server remains usable through the PS5 IP and port 5911.
+   * is non-fatal: the server remains usable through loopback and the PS5 IP.
    */
   app_install_if_needed();
 
