@@ -118,6 +118,11 @@ function openConfirmation() {
   nextTick(() => document.querySelector('.confirm-download')?.focus())
 }
 
+function cancelConfirmation() {
+  if (!confirmOpen.value) return
+  window.history.back()
+}
+
 function handlePopstate() {
   if (confirmOpen.value) {
     confirmOpen.value = false
@@ -343,7 +348,7 @@ onBeforeUnmount(() => {
           </div>
         </dl>
         <div class="confirm-actions">
-          <button type="button" @click="window.history.back()">Cancelar</button>
+          <button type="button" @click="cancelConfirmation">Cancelar</button>
           <button
             class="confirm-download"
             type="button"
