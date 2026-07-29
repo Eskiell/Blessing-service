@@ -1,66 +1,96 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import catalogData from './mocks/packages.json'
 
-const status = ref({
+const packages = ref(catalogData.packages)
+const catalog = ref(catalogData.catalog)
+const catalogState = ref('ready')
+const requestError = ref('')
+const download = ref({
   state: 'idle',
-  label: 'Aguardando',
+  label: 'Nenhum download ativo',
   receivedBytes: 0,
   totalBytes: 0,
   error: '',
 })
-const requestError = ref('')
 let timer = null
 
 const progress = computed(() => {
-  if (!status.value.totalBytes) return 0
+  if (!download.value.totalBytes) return 0
   return Math.min(
     100,
     Math.floor(
-      (status.value.receivedBytes * 100) / status.value.totalBytes,
+      (download.value.receivedBytes * 100) / download.value.totalBytes,
     ),
   )
 })
 
-const busy = computed(() =>
-  ['connecting', 'downloading'].includes(status.value.state),
+const downloadBusy = computed(() =>
+  ['connecting', 'downloading'].includes(download.value.state),
 )
 
-const detail = computed(() => {
-  if (requestError.value) return requestError.value
-  if (status.value.error) return status.value.error
-  if (status.value.state !== 'downloading') return ''
-  return `${progress.value}% — ${status.value.receivedBytes} / ${status.value.totalBytes} bytes`
-})
+const downloadVisible = computed(
+  () => download.value.state !== 'idle' || requestError.value,
+)
 
-async function refresh() {
+function formatBytes(bytes) {
+  if (!Number.isFinite(bytes) || bytes <= 0) return 'Tamanho desconhecido'
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
+  const unit = Math.min(
+    Math.floor(Math.log(bytes) / Math.log(1024)),
+    units.length - 1,
+  )
+  const value = bytes / 1024 ** unit
+  return `${value.toFixed(unit >= 3 ? 1 : 0)} ${units[unit]}`
+}
+
+function initials(title) {
+  return title
+    .split(' ')
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join('')
+    .toUpperCase()
+}
+
+function linkTypes(item) {
+  return [...new Set(item.downloadLinks.map((link) => link.type))]
+}
+
+async function refreshDownload() {
   try {
     const response = await fetch('/api/v1/test-download/status', {
       cache: 'no-store',
     })
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
-    status.value = await response.json()
+    download.value = await response.json()
     requestError.value = ''
   } catch {
-    requestError.value = 'Falha ao consultar o payload'
+    requestError.value = 'Não foi possível consultar o serviço de downloads'
   }
 }
 
-async function startDownload() {
+async function startTestDownload() {
   requestError.value = ''
   try {
     const response = await fetch('/api/v1/test-download', {
       method: 'POST',
     })
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
-    await refresh()
+    await refreshDownload()
   } catch {
-    requestError.value = 'Não foi possível iniciar o download'
+    requestError.value = 'Não foi possível iniciar o download de teste'
   }
 }
 
+function selectPackage(item) {
+  // A abertura dos detalhes pertence ao Marco F2.
+  requestError.value = `${item.title} selecionado — detalhes entram na próxima etapa`
+}
+
 onMounted(() => {
-  refresh()
-  timer = window.setInterval(refresh, 1000)
+  refreshDownload()
+  timer = window.setInterval(refreshDownload, 1000)
 })
 
 onBeforeUnmount(() => {
@@ -70,22 +100,102 @@ onBeforeUnmount(() => {
 
 <template>
   <main class="screen">
-    <section class="panel">
-      <div class="badge">VUE TEST</div>
-      <h1>EZHELIT Store</h1>
-      <p class="subtitle">Prova de interface Vue no PS5</p>
-
-      <button :disabled="busy" type="button" @click="startDownload">
-        {{ busy ? 'Download em andamento' : 'Baixar arquivo de teste' }}
-      </button>
-
-      <div class="status">{{ status.label }}</div>
-
-      <div v-if="busy || status.state === 'completed'" class="progress-track">
-        <div class="progress-value" :style="{ width: `${progress}%` }" />
+    <header class="header">
+      <div>
+        <p class="eyebrow">CATÁLOGO LOCAL</p>
+        <h1>{{ catalog.name }}</h1>
       </div>
 
-      <div class="detail">{{ detail }}</div>
+      <div class="header-actions">
+        <span class="server-status">
+          <span class="status-dot" />
+          Catálogo simulado
+        </span>
+        <button
+          class="downloads-button"
+          :disabled="downloadBusy"
+          type="button"
+          @click="startTestDownload"
+        >
+          {{ downloadBusy ? `${progress}% baixado` : 'Testar download' }}
+        </button>
+      </div>
+    </header>
+
+    <section class="content" aria-live="polite">
+      <div v-if="catalogState === 'loading'" class="empty-state">
+        <h2>Carregando catálogo...</h2>
+      </div>
+
+      <div v-else-if="catalogState === 'error'" class="empty-state">
+        <h2>Catálogo indisponível</h2>
+        <p>Verifique o servidor local e tente novamente.</p>
+      </div>
+
+      <div v-else-if="packages.length === 0" class="empty-state">
+        <h2>Nenhum jogo encontrado</h2>
+        <p>O catálogo está funcionando, mas ainda não possui pacotes.</p>
+      </div>
+
+      <template v-else>
+        <div class="section-heading">
+          <div>
+            <h2>Todos os jogos</h2>
+            <p>{{ packages.length }} títulos disponíveis</p>
+          </div>
+        </div>
+
+        <div class="game-grid">
+          <button
+            v-for="(item, index) in packages"
+            :key="item.id"
+            class="game-card"
+            type="button"
+            :style="{ '--card-index': index }"
+            @click="selectPackage(item)"
+          >
+            <span class="cover" aria-hidden="true">
+              <span class="cover-mark">{{ initials(item.title) }}</span>
+              <span class="cover-id">{{ item.titleId }}</span>
+            </span>
+
+            <span class="game-info">
+              <span class="game-title">{{ item.title }}</span>
+              <span class="game-meta">
+                Versão {{ item.version }} · {{ formatBytes(item.sizeBytes) }}
+              </span>
+              <span class="badges">
+                <span
+                  v-for="type in linkTypes(item)"
+                  :key="type"
+                  class="type-badge"
+                  :class="`type-${type}`"
+                >
+                  {{ type }}
+                </span>
+              </span>
+            </span>
+          </button>
+        </div>
+      </template>
     </section>
+
+    <aside v-if="downloadVisible" class="download-status">
+      <div class="download-copy">
+        <strong>{{ requestError || download.label }}</strong>
+        <span v-if="downloadBusy">
+          {{ formatBytes(download.receivedBytes) }} de
+          {{ formatBytes(download.totalBytes) }}
+        </span>
+      </div>
+      <div v-if="downloadBusy || download.state === 'completed'" class="progress">
+        <div class="progress-value" :style="{ width: `${progress}%` }" />
+      </div>
+    </aside>
+
+    <footer class="footer">
+      <span><kbd>✕</kbd> Selecionar</span>
+      <span>Frontend Vue · catálogo mock v{{ catalogData.schemaVersion }}</span>
+    </footer>
   </main>
 </template>
