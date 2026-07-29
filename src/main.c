@@ -370,6 +370,16 @@ handle_client(int client_fd) {
              (unsigned long long)snapshot.total, DOWNLOAD_URL, FINAL_PATH,
              snapshot.error);
     respond(client_fd, 200, "application/json; charset=utf-8", body);
+  } else if(strncmp(request, "POST /api/v1/downloads ", 23) == 0) {
+    if(strstr(request, "\"packageId\"") == NULL ||
+       strstr(request, "\"downloadLinkId\"") == NULL) {
+      respond(client_fd, 400, "application/json; charset=utf-8",
+              "{\"error\":\"invalid_request\"}");
+    } else {
+      start_download();
+      respond(client_fd, 200, "application/json; charset=utf-8",
+              "{\"accepted\":true,\"mode\":\"simulation\"}");
+    }
   } else if(strncmp(request, "POST /api/v1/test-download ", 27) == 0) {
     start_download();
     respond(client_fd, 200, "application/json; charset=utf-8",

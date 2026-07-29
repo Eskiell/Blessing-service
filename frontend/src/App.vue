@@ -13,6 +13,8 @@ const catalog = ref(catalogData.catalog)
 const catalogState = ref('ready')
 const requestError = ref('')
 const selectedPackage = ref(null)
+const selectedLink = ref(null)
+const confirmOpen = ref(false)
 const selectedIndex = ref(-1)
 const cardElements = []
 const download = ref({
@@ -98,6 +100,7 @@ async function startTestDownload() {
 
 function openDetails(item, index) {
   selectedPackage.value = item
+  selectedLink.value = item.downloadLinks[0] || null
   selectedIndex.value = index
   window.history.pushState({ view: 'details', packageId: item.id }, '')
   nextTick(() => document.querySelector('.back-button')?.focus())
@@ -108,29 +111,65 @@ function closeDetails() {
   window.history.back()
 }
 
-function restoreCatalog() {
-  if (!selectedPackage.value) return
-  selectedPackage.value = null
-  nextTick(() => cardElements[selectedIndex.value]?.focus())
+function openConfirmation() {
+  if (!selectedLink.value || downloadBusy.value) return
+  confirmOpen.value = true
+  window.history.pushState({ view: 'confirm' }, '')
+  nextTick(() => document.querySelector('.confirm-download')?.focus())
+}
+
+function handlePopstate() {
+  if (confirmOpen.value) {
+    confirmOpen.value = false
+    nextTick(() => document.querySelector('.start-download')?.focus())
+    return
+  }
+  if (selectedPackage.value) {
+    selectedPackage.value = null
+    selectedLink.value = null
+    nextTick(() => cardElements[selectedIndex.value]?.focus())
+  }
+}
+
+async function confirmDownload() {
+  requestError.value = ''
+  try {
+    const response = await fetch('/api/v1/downloads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        packageId: selectedPackage.value.id,
+        downloadLinkId: selectedLink.value.id,
+      }),
+    })
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    window.history.back()
+    await refreshDownload()
+  } catch {
+    requestError.value = 'Não foi possível iniciar o download simulado'
+  }
 }
 
 function handleKeydown(event) {
-  if (selectedPackage.value && (event.key === 'Escape' || event.keyCode === 27)) {
+  if (
+    (confirmOpen.value || selectedPackage.value) &&
+    (event.key === 'Escape' || event.keyCode === 27)
+  ) {
     event.preventDefault()
-    closeDetails()
+    window.history.back()
   }
 }
 
 onMounted(() => {
   refreshDownload()
   timer = window.setInterval(refreshDownload, 1000)
-  window.addEventListener('popstate', restoreCatalog)
+  window.addEventListener('popstate', handlePopstate)
   window.addEventListener('keydown', handleKeydown)
 })
 
 onBeforeUnmount(() => {
   if (timer) window.clearInterval(timer)
-  window.removeEventListener('popstate', restoreCatalog)
+  window.removeEventListener('popstate', handlePopstate)
   window.removeEventListener('keydown', handleKeydown)
 })
 </script>
@@ -258,24 +297,63 @@ onBeforeUnmount(() => {
 
           <div class="sources">
             <h3>Origens disponíveis</h3>
-            <div
+            <button
               v-for="link in selectedPackage.downloadLinks"
               :key="link.id"
               class="source-row"
+              :class="{ selected: selectedLink?.id === link.id }"
+              type="button"
+              @click="selectedLink = link"
             >
               <span>{{ link.name }}</span>
               <span class="type-badge" :class="`type-${link.type}`">
                 {{ link.type }}
               </span>
-            </div>
+            </button>
           </div>
 
-          <button class="download-disabled" type="button" disabled>
-            Download será conectado na próxima etapa
+          <button
+            class="start-download"
+            type="button"
+            :disabled="downloadBusy || !selectedLink"
+            @click="openConfirmation"
+          >
+            {{ downloadBusy ? 'Download em andamento' : 'Baixar' }}
           </button>
         </div>
       </div>
     </section>
+
+    <div v-if="confirmOpen" class="modal-backdrop">
+      <section class="confirm-dialog" role="dialog" aria-modal="true">
+        <p class="eyebrow">CONFIRMAR DOWNLOAD</p>
+        <h2>{{ selectedPackage.title }}</h2>
+        <p>
+          Para esta validação, o payload receberá os identificadores abaixo,
+          mas ainda baixará o arquivo técnico de teste.
+        </p>
+        <dl>
+          <div>
+            <dt>Pacote</dt>
+            <dd>{{ selectedPackage.id }}</dd>
+          </div>
+          <div>
+            <dt>Origem</dt>
+            <dd>{{ selectedLink.name }} · {{ selectedLink.type }}</dd>
+          </div>
+        </dl>
+        <div class="confirm-actions">
+          <button type="button" @click="window.history.back()">Cancelar</button>
+          <button
+            class="confirm-download"
+            type="button"
+            @click="confirmDownload"
+          >
+            Confirmar
+          </button>
+        </div>
+      </section>
+    </div>
 
     <aside v-if="downloadVisible" class="download-status">
       <div class="download-copy">
