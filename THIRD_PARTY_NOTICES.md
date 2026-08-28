@@ -14,6 +14,7 @@ code, and the JSON fixture were adapted from OnionHEN:
   - `source/util/source/cheats/mc4_cheat_parser.cpp`
   - `source/util/source/cheats/cheat_engine_parser_shnext.c`
   - `source/util/source/cheats/shn_ext_cheat_parser.cpp`
+  - `source/util/source/cheats/cheat_repository.cpp`
   - `third_party/cheat_support/aes.c`
   - `third_party/cheat_support/base64.c`
   - `source/util/source/cheats/cheat_parser_factory.cpp`

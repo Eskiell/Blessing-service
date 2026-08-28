@@ -33,6 +33,7 @@ SOURCES := \
 	src/parsers/shnext_cheat_parser.cpp \
 	src/parsers/shnext_core.cpp \
 	src/parsers/cheat_parser_factory.cpp \
+	src/repository/file_cheat_repository.cpp \
 	src/http/http_server.cpp \
 	src/assets/embedded_frontend.cpp
 PARSER_C_OBJECTS := build/ps5/mc4/aes.o build/ps5/mc4/base64.o \
@@ -129,6 +130,12 @@ host-test: $(HOST_PARSER_C_OBJECTS)
 		-o build/host-tests/shnext_parser tests/shnext_parser.cpp \
 		$(HOST_PARSER_SOURCES) $(HOST_PARSER_C_OBJECTS)
 	./build/host-tests/shnext_parser
+	$(HOST_CXX) $(HOST_TEST_FLAGS) \
+		-o build/host-tests/file_cheat_repository \
+		tests/file_cheat_repository.cpp \
+		src/repository/file_cheat_repository.cpp \
+		$(HOST_PARSER_SOURCES) $(HOST_PARSER_C_OBJECTS)
+	./build/host-tests/file_cheat_repository
 
 deploy: $(ELF)
 	$(PS5_DEPLOY) -h $(PS5_HOST) -p $(PS5_PORT) $<
