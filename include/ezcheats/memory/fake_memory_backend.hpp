@@ -18,6 +18,9 @@ class FakeMemoryBackend final : public domain::IMemoryBackend {
   void corrupt_after_write(bool enabled) noexcept {
     corrupt_after_write_ = enabled;
   }
+  void fail_on_write_call(size_t call) noexcept { fail_write_call_ = call; }
+  void fail_on_read_call(size_t call) noexcept { fail_read_call_ = call; }
+  size_t write_calls() const noexcept { return write_calls_; }
   size_t mapped_cave_count() const noexcept { return mapped_cave_count_; }
 
  private:
@@ -25,6 +28,10 @@ class FakeMemoryBackend final : public domain::IMemoryBackend {
 
   uint8_t memory_[kMemorySize]{};
   size_t mapped_cave_count_ = 0;
+  size_t write_calls_ = 0;
+  size_t read_calls_ = 0;
+  size_t fail_write_call_ = 0;
+  size_t fail_read_call_ = 0;
   bool corrupt_after_write_ = false;
 };
 

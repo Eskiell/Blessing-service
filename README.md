@@ -86,6 +86,19 @@ os registradores e desanexa o processo, inclusive em retornos de erro. As APIs
 de kernel, mdbg e ptrace permanecem restritas a
 `src/memory/ps5_memory_backends.cpp`.
 
+## Aplicação de cheats
+
+`CheatApplier::set_enabled` resolve o módulo no processo principal ou em outro
+processo do mesmo App ID, calcula endereços absolutos/relativos e confirma cada
+escrita por readback. Patches de PS2 usam endereços absolutos. Master codes são
+identificados e usados para ajustar patches dependentes quando necessário.
+
+Antes de cada mutação, os bytes atuais são salvos. Se qualquer patch falhar, os
+patches já processados são restaurados em ordem reversa; o estado `enabled` só
+muda quando a operação inteira termina. Mudança de PID invalida todos os estados
+anteriores. Code cave é tentado somente ao habilitar um endereço que não podia
+ser lido e que possui bytes de restauração do mesmo tamanho.
+
 Nesta primeira fundação estão disponíveis:
 
 - `GET /`
