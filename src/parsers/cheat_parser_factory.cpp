@@ -9,6 +9,7 @@
 #include "ezcheats/parsers/json_cheat_parser.hpp"
 #include "ezcheats/parsers/mc4_cheat_parser.hpp"
 #include "ezcheats/parsers/shn_cheat_parser.hpp"
+#include "ezcheats/parsers/shnext_cheat_parser.hpp"
 
 namespace ezcheats::parsers {
 namespace {
@@ -31,9 +32,11 @@ domain::ICheatParser* CheatParserFactory::parser_for_format(
   static JsonCheatParser json;
   static ShnCheatParser shn;
   static Mc4CheatParser mc4;
+  static ShnExtCheatParser shnext;
   if (format != nullptr && format_is(format, "json")) return &json;
   if (format != nullptr && format_is(format, "shn")) return &shn;
   if (format != nullptr && format_is(format, "mc4")) return &mc4;
+  if (format != nullptr && format_is(format, "shnext")) return &shnext;
   return nullptr;
 }
 
