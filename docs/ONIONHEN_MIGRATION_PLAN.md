@@ -309,7 +309,7 @@ servidor e serviço C++
 - Requisições concorrentes não corrompem o estado.
 - Hot reload mantém estados somente quando puder fazê-lo corretamente.
 
-### [ ] PR 12 — API HTTP real e integração final do frontend
+### [x] PR 12 — API HTTP real e integração final do frontend
 
 **Objetivo:** substituir o backend simulado pelo motor completo.
 
