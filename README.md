@@ -18,9 +18,32 @@ npm run dev
 ## Build
 
 ```sh
-cd frontend
-npm run build
+export PS5_PAYLOAD_SDK=/caminho/do/ps5-payload-sdk
+make
 ```
+
+O build gera `ez-cheats.elf` em C++20 e incorpora o HTML produzido pelo Vite.
+O SDK atualmente instalado não inclui libc++; por isso, a fundação usa classes
+C++ e RAII sobre a libc do SDK, sem depender da biblioteca-padrão C++. Essa
+fronteira pode ser revista caso libc++ seja adicionada ao toolchain.
+
+Para validar o roteamento HTTP no host:
+
+```sh
+make host-test
+```
+
+Para enviar o ELF ao console:
+
+```sh
+make deploy PS5_HOST=ip-do-ps5
+```
+
+Nesta primeira fundação estão disponíveis:
+
+- `GET /`
+- `GET /health`
+- `GET /api/v1/version`
 
 ## Contrato esperado do backend
 
