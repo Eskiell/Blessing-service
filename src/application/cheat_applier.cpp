@@ -146,7 +146,9 @@ ApplyResult CheatApplier::set_enabled(const domain::GameContext& game,
   if (!platform_.find_module(target_pid, module_name, module) &&
       !platform_.find_module_in_app(game.app_id, module_name, target_pid,
                                     module)) {
-    set_status(status, status_size, cheat->name, "module not found");
+    char message[176]{};
+    snprintf(message, sizeof(message), "module not found: %s", module_name);
+    set_status(status, status_size, cheat->name, message);
     return ApplyResult::module_not_found;
   }
   if (target_pid < 0 || module.section_count == 0 ||

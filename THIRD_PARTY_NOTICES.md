@@ -21,6 +21,7 @@ code, and the JSON fixture were adapted from OnionHEN:
   - `source/util/include/cheats/i_memory_backend.hpp`
   - `source/util/source/cheats/cheat_applier.cpp`
   - `source/util/source/cheats/cheat_service.cpp`
+  - `source/util/source/util_platform.c` (`find_eboot_imagebase` fallback)
   - `third_party/cheat_support/aes.c`
   - `third_party/cheat_support/base64.c`
   - `source/util/source/cheats/cheat_parser_factory.cpp`
