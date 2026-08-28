@@ -34,6 +34,7 @@ SOURCES := \
 	src/parsers/shnext_core.cpp \
 	src/parsers/cheat_parser_factory.cpp \
 	src/repository/file_cheat_repository.cpp \
+	src/platform/ps5_game_platform.cpp \
 	src/http/http_server.cpp \
 	src/assets/embedded_frontend.cpp
 PARSER_C_OBJECTS := build/ps5/mc4/aes.o build/ps5/mc4/base64.o \
@@ -53,6 +54,7 @@ CPPFLAGS := -Iinclude -Ithird_party -Ithird_party/shnext \
 	-DEZ_CHEATS_HTTP_PORT=$(HTTP_PORT) \
 	-DEZ_CHEATS_FRONTEND_PATH='"$(abspath $(FRONTEND_ASSET))"'
 CXXFLAGS := -std=c++20 -nostdlib++ -Wall -Wextra -Werror -Os
+PS5_LIBS := -lSceSystemService
 
 ifeq ($(SHNEXT_KEYSTONE),1)
 ifeq ($(wildcard $(PS5_PAYLOAD_SDK)/target/lib/libc++.a),)
@@ -80,7 +82,8 @@ $(FRONTEND_ASSET): frontend-build
 	@test -s $@
 
 $(ELF): $(SOURCES) $(PARSER_C_OBJECTS) $(HEADERS) $(FRONTEND_ASSET)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $(SOURCES) $(PARSER_C_OBJECTS) $(SHNEXT_LIBS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $(SOURCES) $(PARSER_C_OBJECTS) \
+		$(SHNEXT_LIBS) $(PS5_LIBS)
 
 build/ps5/mc4/%.o: third_party/mc4/%.c third_party/mc4/aes.h third_party/mc4/base64.h
 	mkdir -p $(dir $@)
@@ -136,6 +139,10 @@ host-test: $(HOST_PARSER_C_OBJECTS)
 		src/repository/file_cheat_repository.cpp \
 		$(HOST_PARSER_SOURCES) $(HOST_PARSER_C_OBJECTS)
 	./build/host-tests/file_cheat_repository
+	$(HOST_CXX) $(HOST_TEST_FLAGS) \
+		-o build/host-tests/game_platform tests/game_platform.cpp \
+		src/platform/fake_game_platform.cpp
+	./build/host-tests/game_platform
 
 deploy: $(ELF)
 	$(PS5_DEPLOY) -h $(PS5_HOST) -p $(PS5_PORT) $<
