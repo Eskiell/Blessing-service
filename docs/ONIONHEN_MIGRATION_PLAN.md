@@ -193,7 +193,7 @@ servidor e serviço C++
 - Buffers descriptografados são apagados antes da liberação.
 - Build sem Keystone falha de forma explícita ou desativa somente ShnExt.
 
-### [ ] PR 07 — Repositório de cheats e layout em disco
+### [x] PR 07 — Repositório de cheats e layout em disco
 
 **Objetivo:** localizar arquivos pelo jogo e recarregá-los quando mudarem.
 
