@@ -222,6 +222,19 @@ ReloadResult FileCheatRepository::reload_if_changed(
   return ReloadResult::loaded;
 }
 
+RepositoryProbe FileCheatRepository::probe(
+    const domain::GameContext& game) const noexcept {
+  char path[512];
+  if (!resolve_path(game, path, sizeof(path))) {
+    return RepositoryProbe::missing;
+  }
+  FileSignature current{};
+  if (!stat_signature(path, current)) return RepositoryProbe::error;
+  return has_signature_ && current == signature_
+             ? RepositoryProbe::unchanged
+             : RepositoryProbe::changed;
+}
+
 bool FileCheatRepository::ensure_directory() const noexcept {
   if (directory_[0] == '\0') return false;
   if (strcmp(directory_, EZ_CHEATS_DIRECTORY) == 0) {

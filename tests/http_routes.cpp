@@ -22,9 +22,10 @@ int main() {
   assert(route("POST", "/health") == Route::method_not_allowed);
 
   ezcheats::application::InMemoryCheatService service;
-  auto state = service.state();
+  ezcheats::domain::ServiceSnapshot state{};
+  assert(service.snapshot(state));
   assert(state.connected);
-  assert(state.game != nullptr);
+  assert(state.has_game);
   assert(state.cheat_count == 3);
   assert(!state.cheats[0].enabled);
 
@@ -32,7 +33,8 @@ int main() {
   assert(service.set_enabled(0, true, updated));
   assert(updated.id == 0);
   assert(updated.enabled);
-  assert(service.state().cheats[0].enabled);
+  assert(service.snapshot(state));
+  assert(state.cheats[0].enabled);
   assert(!service.set_enabled(99, true, updated));
 
   char json_buffer[64]{};

@@ -8,7 +8,8 @@ class InMemoryCheatService final : public domain::ICheatService {
  public:
   InMemoryCheatService() noexcept;
 
-  domain::ServiceState state() const override;
+  bool refresh() override { return true; }
+  bool snapshot(domain::ServiceSnapshot& output) const override;
   bool set_enabled(uint32_t id, bool enabled,
                    domain::CheatEntry& updated) override;
 

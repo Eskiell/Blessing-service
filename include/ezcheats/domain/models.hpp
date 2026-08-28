@@ -72,12 +72,14 @@ struct ModuleInfo {
   size_t section_count;
 };
 
-struct ServiceState {
+struct ServiceSnapshot {
   bool connected;
-  const char* backend;
-  const GameContext* game;
-  const CheatEntry* cheats;
+  char backend[32];
+  bool has_game;
+  GameContext game;
+  CheatEntry cheats[kMaxCheats];
   size_t cheat_count;
+  char error[160];
 };
 
 }  // namespace ezcheats::domain

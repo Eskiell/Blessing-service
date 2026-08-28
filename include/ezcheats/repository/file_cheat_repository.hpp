@@ -33,6 +33,13 @@ enum class ReloadResult {
   error,
 };
 
+enum class RepositoryProbe {
+  changed,
+  unchanged,
+  missing,
+  error,
+};
+
 class FileCheatRepository final : public domain::ICheatRepository {
  public:
   explicit FileCheatRepository(
@@ -42,6 +49,7 @@ class FileCheatRepository final : public domain::ICheatRepository {
             domain::CheatFile& output) override;
   ReloadResult reload_if_changed(const domain::GameContext& game,
                                  domain::CheatFile& output);
+  RepositoryProbe probe(const domain::GameContext& game) const noexcept;
 
   bool resolve_path(const domain::GameContext& game, char* output,
                     size_t output_size) const noexcept;

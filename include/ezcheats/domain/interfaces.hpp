@@ -52,7 +52,8 @@ class ICheatRepository {
 
 class ICheatService {
  public:
-  virtual ServiceState state() const = 0;
+  virtual bool refresh() = 0;
+  virtual bool snapshot(ServiceSnapshot& output) const = 0;
   virtual bool set_enabled(uint32_t id, bool enabled,
                            CheatEntry& updated) = 0;
 
