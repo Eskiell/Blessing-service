@@ -1,6 +1,8 @@
 PS5_HOST ?= ps5
 PS5_PORT ?= 9021
 HTTP_PORT ?= 5911
+CHEATS_DIRECTORY ?= /data/ez-cheats/cheats
+MEMORY_BACKEND ?= automatic
 NPM ?= npm
 HOST_CXX ?= c++
 HOST_CC ?= cc
@@ -55,9 +57,20 @@ HEADERS := $(shell find include -type f -name '*.hpp')
 
 CPPFLAGS := -Iinclude -Ithird_party -Ithird_party/shnext \
 	-DEZ_CHEATS_HTTP_PORT=$(HTTP_PORT) \
+	-DEZ_CHEATS_DIRECTORY='"$(CHEATS_DIRECTORY)"' \
 	-DEZ_CHEATS_FRONTEND_PATH='"$(abspath $(FRONTEND_ASSET))"'
 CXXFLAGS := -std=c++20 -nostdlib++ -Wall -Wextra -Werror -Os
 PS5_LIBS := -lSceSystemService -lpthread
+
+ifeq ($(MEMORY_BACKEND),automatic)
+CPPFLAGS += -DEZ_CHEATS_MEMORY_BACKEND=0
+else ifeq ($(MEMORY_BACKEND),mdbg)
+CPPFLAGS += -DEZ_CHEATS_MEMORY_BACKEND=1
+else ifeq ($(MEMORY_BACKEND),kdirect)
+CPPFLAGS += -DEZ_CHEATS_MEMORY_BACKEND=2
+else
+$(error MEMORY_BACKEND must be automatic, mdbg, or kdirect)
+endif
 
 ifeq ($(SHNEXT_KEYSTONE),1)
 ifeq ($(wildcard $(PS5_PAYLOAD_SDK)/target/lib/libc++.a),)

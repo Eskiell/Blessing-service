@@ -34,7 +34,10 @@ export async function getCheatState() {
 export async function setCheatEnabled(id, enabled) {
   const response = await fetch(`${API_BASE}/cheats/${encodeURIComponent(id)}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'X-EZ-Cheats-Request': '1',
+    },
     body: JSON.stringify({ enabled }),
   })
   return readResponse(response)
