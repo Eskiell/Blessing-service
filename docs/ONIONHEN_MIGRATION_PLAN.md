@@ -287,7 +287,7 @@ servidor e serviço C++
 - Escrita parcial ou divergente não marca o cheat como ativo.
 - Índices, tamanhos e endereços inválidos são rejeitados.
 
-### [ ] PR 11 — Serviço de cheats e ciclo de vida do jogo
+### [x] PR 11 — Serviço de cheats e ciclo de vida do jogo
 
 **Objetivo:** coordenar jogo, arquivo, parser e aplicador com segurança.
 
