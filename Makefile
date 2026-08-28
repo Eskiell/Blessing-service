@@ -3,7 +3,10 @@ PS5_PORT ?= 9021
 HTTP_PORT ?= 5911
 NPM ?= npm
 HOST_CXX ?= c++
-HOST_TEST_FLAGS := -std=c++20 -Wall -Wextra -Werror -Iinclude \
+HOST_CC ?= cc
+HOST_TEST_FLAGS := -std=c++20 -Wall -Wextra -Werror -Iinclude -Ithird_party \
+	-fsanitize=address,undefined -fno-omit-frame-pointer
+HOST_C_FLAGS := -std=c11 -Wall -Wextra -Werror -Ithird_party \
 	-fsanitize=address,undefined -fno-omit-frame-pointer
 
 ifdef PS5_PAYLOAD_SDK
@@ -23,12 +26,16 @@ SOURCES := \
 	src/parsers/parser_utils.cpp \
 	src/parsers/json_cheat_parser.cpp \
 	src/parsers/shn_cheat_parser.cpp \
+	src/parsers/mc4_cheat_parser.cpp \
 	src/parsers/cheat_parser_factory.cpp \
 	src/http/http_server.cpp \
 	src/assets/embedded_frontend.cpp
+C_SOURCES := third_party/mc4/aes.c third_party/mc4/base64.c
+MC4_OBJECTS := build/ps5/mc4/aes.o build/ps5/mc4/base64.o
+HOST_MC4_OBJECTS := build/host-tests/mc4/aes.o build/host-tests/mc4/base64.o
 HEADERS := $(shell find include -type f -name '*.hpp')
 
-CPPFLAGS := -Iinclude -DEZ_CHEATS_HTTP_PORT=$(HTTP_PORT) \
+CPPFLAGS := -Iinclude -Ithird_party -DEZ_CHEATS_HTTP_PORT=$(HTTP_PORT) \
 	-DEZ_CHEATS_FRONTEND_PATH='"$(abspath $(FRONTEND_ASSET))"'
 CXXFLAGS := -std=c++20 -nostdlib++ -Wall -Wextra -Werror -Os
 
@@ -45,10 +52,18 @@ frontend-build: $(FRONTEND_MARKER)
 $(FRONTEND_ASSET): frontend-build
 	@test -s $@
 
-$(ELF): $(SOURCES) $(HEADERS) $(FRONTEND_ASSET)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $(SOURCES)
+$(ELF): $(SOURCES) $(MC4_OBJECTS) $(HEADERS) $(FRONTEND_ASSET)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $(SOURCES) $(MC4_OBJECTS)
 
-host-test:
+build/ps5/mc4/%.o: third_party/mc4/%.c third_party/mc4/aes.h third_party/mc4/base64.h
+	mkdir -p $(dir $@)
+	$(CC) -std=c11 -Wall -Wextra -Werror -Ithird_party -c -o $@ $<
+
+build/host-tests/mc4/%.o: third_party/mc4/%.c third_party/mc4/aes.h third_party/mc4/base64.h
+	mkdir -p $(dir $@)
+	$(HOST_CC) $(HOST_C_FLAGS) -c -o $@ $<
+
+host-test: $(HOST_MC4_OBJECTS)
 	mkdir -p build/host-tests
 	$(HOST_CXX) $(HOST_TEST_FLAGS) \
 		-o build/host-tests/http_routes tests/http_routes.cpp \
@@ -58,14 +73,23 @@ host-test:
 		-o build/host-tests/json_parser tests/json_parser.cpp \
 		src/domain/owned_cheat_file.cpp src/parsers/parser_utils.cpp \
 		src/parsers/json_cheat_parser.cpp src/parsers/shn_cheat_parser.cpp \
-		src/parsers/cheat_parser_factory.cpp
+		src/parsers/mc4_cheat_parser.cpp \
+		src/parsers/cheat_parser_factory.cpp $(HOST_MC4_OBJECTS)
 	./build/host-tests/json_parser
 	$(HOST_CXX) $(HOST_TEST_FLAGS) \
 		-o build/host-tests/shn_parser tests/shn_parser.cpp \
 		src/domain/owned_cheat_file.cpp src/parsers/parser_utils.cpp \
 		src/parsers/json_cheat_parser.cpp src/parsers/shn_cheat_parser.cpp \
-		src/parsers/cheat_parser_factory.cpp
+		src/parsers/mc4_cheat_parser.cpp \
+		src/parsers/cheat_parser_factory.cpp $(HOST_MC4_OBJECTS)
 	./build/host-tests/shn_parser
+	$(HOST_CXX) $(HOST_TEST_FLAGS) \
+		-o build/host-tests/mc4_parser tests/mc4_parser.cpp \
+		src/domain/owned_cheat_file.cpp src/parsers/parser_utils.cpp \
+		src/parsers/json_cheat_parser.cpp src/parsers/shn_cheat_parser.cpp \
+		src/parsers/mc4_cheat_parser.cpp src/parsers/cheat_parser_factory.cpp \
+		$(HOST_MC4_OBJECTS)
+	./build/host-tests/mc4_parser
 
 deploy: $(ELF)
 	$(PS5_DEPLOY) -h $(PS5_HOST) -p $(PS5_PORT) $<
