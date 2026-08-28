@@ -7,19 +7,28 @@ const loading = ref(true)
 const error = ref('')
 const pendingIds = ref(new Set())
 let refreshTimer = null
+let activeRefresh = null
 
 const enabledCount = computed(() => state.value.cheats.filter((cheat) => cheat.enabled).length)
 
 async function refresh({ quiet = false } = {}) {
+  if (activeRefresh || pendingIds.value.size > 0) return activeRefresh
   if (!quiet) loading.value = true
+  activeRefresh = (async () => {
+    try {
+      state.value = await getCheatState()
+      error.value = state.value.error || ''
+    } catch (requestError) {
+      state.value = { connected: false, game: null, cheats: [], backend: 'unknown' }
+      error.value = requestError.message || 'Não foi possível conectar ao serviço de cheats.'
+    } finally {
+      loading.value = false
+    }
+  })()
   try {
-    state.value = await getCheatState()
-    error.value = ''
-  } catch {
-    state.value = { connected: false, game: null, cheats: [], backend: 'unknown' }
-    error.value = 'Não foi possível conectar ao serviço de cheats.'
+    await activeRefresh
   } finally {
-    loading.value = false
+    activeRefresh = null
   }
 }
 
@@ -28,12 +37,13 @@ async function toggleCheat(cheat) {
   pendingIds.value = new Set(pendingIds.value).add(cheat.id)
   error.value = ''
   try {
+    if (activeRefresh) await activeRefresh
     const updated = await setCheatEnabled(cheat.id, !cheat.enabled)
     state.value.cheats = state.value.cheats.map((item) =>
       item.id === updated.id ? { ...item, ...updated } : item,
     )
-  } catch {
-    error.value = `Não foi possível alterar “${cheat.name}”.`
+  } catch (requestError) {
+    error.value = requestError.message || `Não foi possível alterar “${cheat.name}”.`
   } finally {
     const next = new Set(pendingIds.value)
     next.delete(cheat.id)
