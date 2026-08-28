@@ -62,7 +62,7 @@ servidor e serviço C++
 
 ## Demandas por PR
 
-### [ ] PR 01 — Fundação do payload em C++
+### [x] PR 01 — Fundação do payload em C++
 
 **Objetivo:** criar a base compilável do backend sem implementar cheats.
 
