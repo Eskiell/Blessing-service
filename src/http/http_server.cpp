@@ -110,9 +110,13 @@ bool parse_request_line(char* request, char*& method, char*& target) {
 
 const char* find_header(const char* headers, const char* name) {
   const size_t name_size = strlen(name);
-  for (const char* line = headers; *line != '\0'; ++line) {
+  const char* line = headers;
+  while (line != nullptr && line[0] != '\0' &&
+         !(line[0] == '\r' && line[1] == '\n')) {
+    const char* line_end = strstr(line, "\r\n");
+    if (line_end == nullptr) return nullptr;
     size_t i = 0;
-    while (i < name_size && line[i] != '\0') {
+    while (i < name_size && line + i < line_end) {
       char a = line[i];
       char b = name[i];
       if (a >= 'A' && a <= 'Z') a = static_cast<char>(a - 'A' + 'a');
@@ -120,9 +124,52 @@ const char* find_header(const char* headers, const char* name) {
       if (a != b) break;
       ++i;
     }
-    if (i == name_size && line[i] == ':') return line + i + 1;
+    if (i == name_size && line + i < line_end && line[i] == ':') {
+      return line + i + 1;
+    }
+    line = line_end + 2;
   }
   return nullptr;
+}
+
+bool copy_header_value(const char* headers, const char* name, char* output,
+                       size_t output_size) {
+  if (headers == nullptr || output == nullptr || output_size == 0) return false;
+  const char* value = find_header(headers, name);
+  if (value == nullptr) return false;
+  while (*value == ' ' || *value == '\t') ++value;
+  const char* end = strstr(value, "\r\n");
+  if (end == nullptr) return false;
+  while (end > value && (end[-1] == ' ' || end[-1] == '\t')) --end;
+  const size_t size = static_cast<size_t>(end - value);
+  if (size == 0 || size >= output_size) return false;
+  memcpy(output, value, size);
+  output[size] = '\0';
+  return true;
+}
+
+bool mutation_allowed(const char* headers) {
+  char host[256]{}, origin[288]{}, marker[16]{}, content_type[64]{};
+  if (!copy_header_value(headers, "Host", host, sizeof(host)) ||
+      !copy_header_value(headers, "Origin", origin, sizeof(origin)) ||
+      !copy_header_value(headers, "X-EZ-Cheats-Request", marker,
+                         sizeof(marker)) ||
+      !copy_header_value(headers, "Content-Type", content_type,
+                         sizeof(content_type)) ||
+      strcmp(marker, "1") != 0 ||
+      strncmp(content_type, "application/json", 16) != 0 ||
+      (content_type[16] != '\0' && content_type[16] != ';')) {
+    return false;
+  }
+  char expected[288]{};
+  const int http = snprintf(expected, sizeof(expected), "http://%s", host);
+  if (http > 0 && static_cast<size_t>(http) < sizeof(expected) &&
+      strcmp(origin, expected) == 0) {
+    return true;
+  }
+  const int https = snprintf(expected, sizeof(expected), "https://%s", host);
+  return https > 0 && static_cast<size_t>(https) < sizeof(expected) &&
+         strcmp(origin, expected) == 0;
 }
 
 bool read_request(int fd, char* request, size_t capacity, char*& body) {
@@ -141,7 +188,18 @@ bool read_request(int fd, char* request, size_t capacity, char*& body) {
       if (header_end == nullptr) continue;
       body = header_end + 4;
       const char* length = find_header(request, "Content-Length");
-      if (length != nullptr) expected = static_cast<size_t>(strtoul(length, nullptr, 10));
+      if (length != nullptr) {
+        while (*length == ' ' || *length == '\t') ++length;
+        errno = 0;
+        char* end = nullptr;
+        const unsigned long parsed = strtoul(length, &end, 10);
+        while (end != nullptr && (*end == ' ' || *end == '\t')) ++end;
+        if (errno != 0 || end == length || end == nullptr ||
+            end[0] != '\r' || end[1] != '\n') {
+          return false;
+        }
+        expected = static_cast<size_t>(parsed);
+      }
       if (expected > capacity - static_cast<size_t>(body - request) - 1) return false;
     }
     if (received >= static_cast<size_t>(body - request) + expected) return true;
@@ -158,17 +216,35 @@ bool parse_toggle(const char* target, const char* body, uint32_t& id,
       parsed > UINT32_MAX) {
     return false;
   }
-  const char* field = strstr(body, "\"enabled\"");
-  if (field == nullptr || (field = strchr(field, ':')) == nullptr) return false;
-  ++field;
-  while (*field == ' ' || *field == '\t' || *field == '\r' || *field == '\n') ++field;
+  const char* field = body;
+  auto skip_space = [&field]() {
+    while (*field == ' ' || *field == '\t' || *field == '\r' ||
+           *field == '\n') {
+      ++field;
+    }
+  };
+  skip_space();
+  if (*field++ != '{') return false;
+  skip_space();
+  constexpr const char* key = "\"enabled\"";
+  if (strncmp(field, key, strlen(key)) != 0) return false;
+  field += strlen(key);
+  skip_space();
+  if (*field++ != ':') return false;
+  skip_space();
   if (strncmp(field, "true", 4) == 0) {
     enabled = true;
+    field += 4;
   } else if (strncmp(field, "false", 5) == 0) {
     enabled = false;
+    field += 5;
   } else {
     return false;
   }
+  skip_space();
+  if (*field++ != '}') return false;
+  skip_space();
+  if (*field != '\0') return false;
   id = static_cast<uint32_t>(parsed);
   return true;
 }
@@ -211,6 +287,8 @@ void handle_client(int fd, domain::ICheatService& cheat_service) {
   char request[kRequestLimit + 1]{};
   char* body = nullptr;
   if (!read_request(fd, request, sizeof(request), body)) return;
+  char* headers = strstr(request, "\r\n");
+  if (headers != nullptr) headers += 2;
   char* method = nullptr;
   char* target = nullptr;
   if (!parse_request_line(request, method, target)) {
@@ -248,6 +326,12 @@ void handle_client(int fd, domain::ICheatService& cheat_service) {
       break;
     }
     case Route::cheat_toggle: {
+      if (!mutation_allowed(headers)) {
+        printf("EZ Cheats: rejected cross-origin or unmarked mutation\n");
+        respond_error(fd, 403, "Forbidden", "forbidden_origin",
+                      "Mutation requires the embedded frontend origin.");
+        break;
+      }
       uint32_t id = 0;
       bool enabled = false;
       if (!parse_toggle(target, body, id, enabled)) {
@@ -282,6 +366,8 @@ void handle_client(int fd, domain::ICheatService& cheat_service) {
                           : snapshot.error);
         break;
       }
+      printf("EZ Cheats: cheat id=%u enabled=%s\n", id,
+             updated.enabled ? "true" : "false");
       char response[1024]{};
       JsonWriter json{response, sizeof(response)};
       if (!write_cheat(json, updated)) {

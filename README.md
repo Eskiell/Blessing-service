@@ -20,8 +20,10 @@ npm run dev
 ## Build
 
 ```sh
+git clone https://github.com/Eskiell/ez-cheats.git
+cd ez-cheats
 export PS5_PAYLOAD_SDK=/caminho/do/ps5-payload-sdk
-make
+make all
 ```
 
 O build gera `ez-cheats.elf` em C++20 e incorpora o HTML produzido pelo Vite.
@@ -40,6 +42,19 @@ Para enviar o ELF ao console:
 ```sh
 make deploy PS5_HOST=ip-do-ps5
 ```
+
+Configurações são fornecidas no build:
+
+```sh
+make all HTTP_PORT=5911 \
+  CHEATS_DIRECTORY=/data/ez-cheats/cheats \
+  MEMORY_BACKEND=automatic
+```
+
+`MEMORY_BACKEND` aceita `automatic`, `mdbg` ou `kdirect`. O modo automático
+consulta o firmware no console. Consulte o [guia operacional](docs/OPERATIONS.md)
+para instalação, segurança e diagnóstico e o
+[checklist PS5](docs/PS5_TEST_CHECKLIST.md) antes de publicar uma versão.
 
 ## Arquivos de cheats
 
@@ -151,3 +166,14 @@ Erros usam o formato `{"error":"codigo","message":"detalhes"}`. Toggle sem
 jogo responde `409`, ID ausente responde `404`, falha de módulo ou memória
 responde `422` e indisponibilidade interna do serviço responde `503`. Todas as
 respostas de estado usam `Cache-Control: no-store`.
+
+Mutações aceitam apenas a origem do frontend incorporado e exigem o cabeçalho
+`X-EZ-Cheats-Request: 1`. Essa proteção impede que uma página aberta em outra
+origem altere a memória do jogo através do navegador do usuário.
+
+## Licenças e componentes
+
+O projeto é distribuído sob GPL-3.0. Consulte o
+[inventário de componentes](docs/COMPONENT_INVENTORY.md) e os
+[avisos detalhados](THIRD_PARTY_NOTICES.md) antes de redistribuir o ELF ou
+alterar dependências vendorizadas.

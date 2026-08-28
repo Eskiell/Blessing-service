@@ -20,6 +20,7 @@ code, and the JSON fixture were adapted from OnionHEN:
   - `source/util/source/cheats/memory_backends.cpp`
   - `source/util/include/cheats/i_memory_backend.hpp`
   - `source/util/source/cheats/cheat_applier.cpp`
+  - `source/util/source/cheats/cheat_service.cpp`
   - `third_party/cheat_support/aes.c`
   - `third_party/cheat_support/base64.c`
   - `source/util/source/cheats/cheat_parser_factory.cpp`

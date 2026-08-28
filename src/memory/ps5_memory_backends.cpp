@@ -21,6 +21,13 @@ extern "C" int sceKernelGetProsperoSystemSwVersion(void* version);
 constexpr uint64_t kPageSize = 0x4000;
 constexpr uint64_t kInvalidPhysicalAddress = UINT64_MAX;
 
+struct KernelVersion {
+  uint64_t padding0;
+  char version_string[0x1c];
+  uint32_t version;
+  uint64_t padding1;
+};
+
 class PtraceAttachment final {
  public:
   explicit PtraceAttachment(int pid) noexcept : pid_(pid) {
@@ -192,18 +199,8 @@ class KdirectMemoryBackend final : public domain::IMemoryBackend {
   }
 
  private:
-  struct KernelVersion {
-    uint64_t padding0;
-    char version_string[0x1c];
-    uint32_t version;
-    uint64_t padding1;
-  };
-
   static uint32_t firmware_major() noexcept {
-    KernelVersion version{};
-    return sceKernelGetProsperoSystemSwVersion(&version) == 0
-               ? version.version >> 16
-               : 0;
+    return MemoryBackendFactory::detect_firmware_major();
   }
 
   static bool page_table(int pid, uint64_t& cr3,
@@ -293,6 +290,13 @@ domain::IMemoryBackend* MemoryBackendFactory::create(
   return resolve_kind(requested, firmware_major) == MemoryBackendKind::kdirect
              ? static_cast<domain::IMemoryBackend*>(&kdirect)
              : static_cast<domain::IMemoryBackend*>(&mdbg);
+}
+
+uint32_t MemoryBackendFactory::detect_firmware_major() noexcept {
+  KernelVersion version{};
+  return sceKernelGetProsperoSystemSwVersion(&version) == 0
+             ? version.version >> 16
+             : 0;
 }
 
 }  // namespace ezcheats::memory

@@ -23,6 +23,7 @@ class MemoryBackendFactory final {
 
   static domain::IMemoryBackend* create(MemoryBackendKind requested,
                                         uint32_t firmware_major) noexcept;
+  static uint32_t detect_firmware_major() noexcept;
 };
 
 }  // namespace ezcheats::memory
