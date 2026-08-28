@@ -3,6 +3,8 @@ PS5_PORT ?= 9021
 HTTP_PORT ?= 5911
 NPM ?= npm
 HOST_CXX ?= c++
+HOST_TEST_FLAGS := -std=c++20 -Wall -Wextra -Werror -Iinclude \
+	-fsanitize=address,undefined -fno-omit-frame-pointer
 
 ifdef PS5_PAYLOAD_SDK
 include $(PS5_PAYLOAD_SDK)/toolchain/prospero.mk
@@ -17,6 +19,10 @@ FRONTEND_MARKER := $(FRONTEND_DIR)/node_modules/.package-lock.json
 SOURCES := \
 	src/main.cpp \
 	src/application/in_memory_cheat_service.cpp \
+	src/domain/owned_cheat_file.cpp \
+	src/parsers/parser_utils.cpp \
+	src/parsers/json_cheat_parser.cpp \
+	src/parsers/cheat_parser_factory.cpp \
 	src/http/http_server.cpp \
 	src/assets/embedded_frontend.cpp
 HEADERS := $(shell find include -type f -name '*.hpp')
@@ -43,10 +49,15 @@ $(ELF): $(SOURCES) $(HEADERS) $(FRONTEND_ASSET)
 
 host-test:
 	mkdir -p build/host-tests
-	$(HOST_CXX) -std=c++20 -Wall -Wextra -Werror -Iinclude \
+	$(HOST_CXX) $(HOST_TEST_FLAGS) \
 		-o build/host-tests/http_routes tests/http_routes.cpp \
 		src/application/in_memory_cheat_service.cpp
 	./build/host-tests/http_routes
+	$(HOST_CXX) $(HOST_TEST_FLAGS) \
+		-o build/host-tests/json_parser tests/json_parser.cpp \
+		src/domain/owned_cheat_file.cpp src/parsers/parser_utils.cpp \
+		src/parsers/json_cheat_parser.cpp src/parsers/cheat_parser_factory.cpp
+	./build/host-tests/json_parser
 
 deploy: $(ELF)
 	$(PS5_DEPLOY) -h $(PS5_HOST) -p $(PS5_PORT) $<
