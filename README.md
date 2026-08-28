@@ -41,6 +41,25 @@ Para enviar o ELF ao console:
 make deploy PS5_HOST=ip-do-ps5
 ```
 
+## Arquivos de cheats
+
+O runtime procura cheats no diretório plano `/data/ez-cheats/cheats`. O nome
+de cada arquivo deve seguir `<TITLE_ID>_<VERSION>.<formato>`, por exemplo
+`PPSA00001_01.002.003.json`.
+
+Quando mais de um arquivo existir para o mesmo jogo e versão, a precedência é:
+
+1. `.json`
+2. `.shn`
+3. `.mc4`
+4. `.ShnExt`
+
+Title ID e versão são validados antes de compor o caminho. O repositório rejeita
+links simbólicos e acompanha caminho, inode, tamanho, `mtime` e `ctime` para
+recarregar automaticamente um arquivo substituído ou editado. Árvores aninhadas
+de distribuição não são processadas pelo payload; eventual flatten deve ser
+feito por uma ferramenta de instalação separada.
+
 Nesta primeira fundação estão disponíveis:
 
 - `GET /`
