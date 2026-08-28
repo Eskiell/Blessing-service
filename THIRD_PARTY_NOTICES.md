@@ -10,9 +10,11 @@ code, and the JSON fixture were adapted from OnionHEN:
 - Source paths:
   - `source/util/source/cheats/cheat_engine_utils.c`
   - `source/util/source/cheats/json_cheat_parser.cpp`
+  - `source/util/source/cheats/xml_cheat_parser.cpp`
   - `source/util/source/cheats/cheat_parser_factory.cpp`
   - `source/util/tests/test_cheat_parsers.cpp`
   - `source/util/tests/fixtures/cheats/PPSA26344_01.008.000.json`
+  - `source/util/tests/fixtures/cheats/PPSA21159_01.001.000.shn`
 - License: GNU General Public License, version 3
 
 The EZ Cheats adaptation replaces OnionHEN-specific logging, paths and utility

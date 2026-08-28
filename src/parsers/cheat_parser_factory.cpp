@@ -7,6 +7,7 @@
 
 #include "ezcheats/domain/owned_cheat_file.hpp"
 #include "ezcheats/parsers/json_cheat_parser.hpp"
+#include "ezcheats/parsers/shn_cheat_parser.hpp"
 
 namespace ezcheats::parsers {
 namespace {
@@ -27,7 +28,9 @@ bool format_is(const char* format, const char* expected) noexcept {
 domain::ICheatParser* CheatParserFactory::parser_for_format(
     const char* format) noexcept {
   static JsonCheatParser json;
+  static ShnCheatParser shn;
   if (format != nullptr && format_is(format, "json")) return &json;
+  if (format != nullptr && format_is(format, "shn")) return &shn;
   return nullptr;
 }
 

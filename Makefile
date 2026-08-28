@@ -22,6 +22,7 @@ SOURCES := \
 	src/domain/owned_cheat_file.cpp \
 	src/parsers/parser_utils.cpp \
 	src/parsers/json_cheat_parser.cpp \
+	src/parsers/shn_cheat_parser.cpp \
 	src/parsers/cheat_parser_factory.cpp \
 	src/http/http_server.cpp \
 	src/assets/embedded_frontend.cpp
@@ -56,8 +57,15 @@ host-test:
 	$(HOST_CXX) $(HOST_TEST_FLAGS) \
 		-o build/host-tests/json_parser tests/json_parser.cpp \
 		src/domain/owned_cheat_file.cpp src/parsers/parser_utils.cpp \
-		src/parsers/json_cheat_parser.cpp src/parsers/cheat_parser_factory.cpp
+		src/parsers/json_cheat_parser.cpp src/parsers/shn_cheat_parser.cpp \
+		src/parsers/cheat_parser_factory.cpp
 	./build/host-tests/json_parser
+	$(HOST_CXX) $(HOST_TEST_FLAGS) \
+		-o build/host-tests/shn_parser tests/shn_parser.cpp \
+		src/domain/owned_cheat_file.cpp src/parsers/parser_utils.cpp \
+		src/parsers/json_cheat_parser.cpp src/parsers/shn_cheat_parser.cpp \
+		src/parsers/cheat_parser_factory.cpp
+	./build/host-tests/shn_parser
 
 deploy: $(ELF)
 	$(PS5_DEPLOY) -h $(PS5_HOST) -p $(PS5_PORT) $<
