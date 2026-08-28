@@ -73,6 +73,19 @@ Headers e chamadas específicas do SDK ficam em
 `src/platform/ps5_game_platform.cpp`; domínio, serviço e testes host não
 incluem dependências do SDK.
 
+## Backends de memória
+
+O motor oferece os backends `mdbg` e `kdirect`. No modo automático, firmwares
+anteriores a 8.40 usam mdbg e firmwares 8.40 ou superiores usam kdirect; a
+seleção também pode ser forçada pelo chamador. Toda escrita pode ser confirmada
+por leitura imediata com `write_verified`.
+
+O mapeamento de code cave alinha a faixa em páginas de 16 KiB, anexa o processo
+com RAII, executa `mmap` com endereço fixo, aplica proteção RWX e sempre restaura
+os registradores e desanexa o processo, inclusive em retornos de erro. As APIs
+de kernel, mdbg e ptrace permanecem restritas a
+`src/memory/ps5_memory_backends.cpp`.
+
 Nesta primeira fundação estão disponíveis:
 
 - `GET /`
