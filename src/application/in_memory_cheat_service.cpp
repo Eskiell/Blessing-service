@@ -41,8 +41,20 @@ InMemoryCheatService::InMemoryCheatService() noexcept {
                    "Aumenta a experiência recebida", "EZ Cheats");
 }
 
-domain::ServiceState InMemoryCheatService::state() const {
-  return {true, "mock", &game_, cheats_, 3};
+bool InMemoryCheatService::snapshot(domain::ServiceSnapshot& output) const {
+  memset(&output, 0, sizeof(output));
+  output.connected = true;
+  snprintf(output.backend, sizeof(output.backend), "mock");
+  output.has_game = true;
+  output.game = game_;
+  output.cheat_count = 3;
+  for (size_t i = 0; i < output.cheat_count; ++i) {
+    output.cheats[i] = cheats_[i];
+    output.cheats[i].patches = nullptr;
+    output.cheats[i].patch_count = 0;
+    output.cheats[i].patch_capacity = 0;
+  }
+  return true;
 }
 
 bool InMemoryCheatService::set_enabled(uint32_t id, bool enabled,

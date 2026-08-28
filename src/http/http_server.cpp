@@ -165,16 +165,16 @@ bool write_cheat(JsonWriter& json, const domain::CheatEntry& cheat) {
          json.append("}");
 }
 
-bool write_state(JsonWriter& json, const domain::ServiceState& state) {
+bool write_state(JsonWriter& json, const domain::ServiceSnapshot& state) {
   if (!json.append("{\"connected\":") || !json.boolean(state.connected) ||
       !json.append(",\"backend\":") || !json.quoted(state.backend)) return false;
-  if (state.game == nullptr) {
+  if (!state.has_game) {
     if (!json.append(",\"game\":null")) return false;
   } else if (!json.append(",\"game\":{\"titleId\":") ||
-             !json.quoted(state.game->title_id) || !json.append(",\"name\":") ||
-             !json.quoted(state.game->name) || !json.append(",\"version\":") ||
-             !json.quoted(state.game->version) || !json.append(",\"platform\":") ||
-             !json.quoted(state.game->platform) || !json.append("}")) {
+             !json.quoted(state.game.title_id) || !json.append(",\"name\":") ||
+             !json.quoted(state.game.name) || !json.append(",\"version\":") ||
+             !json.quoted(state.game.version) || !json.append(",\"platform\":") ||
+             !json.quoted(state.game.platform) || !json.append("}")) {
     return false;
   }
   if (!json.append(",\"cheats\":[")) return false;
@@ -211,7 +211,9 @@ void handle_client(int fd, domain::ICheatService& cheat_service) {
     case Route::cheats: {
       char response[kResponseLimit]{};
       JsonWriter json{response, sizeof(response)};
-      if (!write_state(json, cheat_service.state())) {
+      domain::ServiceSnapshot snapshot{};
+      if (!cheat_service.refresh() || !cheat_service.snapshot(snapshot) ||
+          !write_state(json, snapshot)) {
         respond_json(fd, 500, "Internal Server Error", R"({"error":"response_too_large"})");
       } else {
         respond_json(fd, 200, "OK", json.data());
