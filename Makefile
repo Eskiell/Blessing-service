@@ -24,7 +24,6 @@ FRONTEND_ASSET := $(FRONTEND_DIR)/dist/index.html
 FRONTEND_MARKER := $(FRONTEND_DIR)/node_modules/.package-lock.json
 SOURCES := \
 	src/main.cpp \
-	src/application/in_memory_cheat_service.cpp \
 	src/application/cheat_service.cpp \
 	src/application/cheat_applier.cpp \
 	src/domain/owned_cheat_file.cpp \
@@ -58,7 +57,7 @@ CPPFLAGS := -Iinclude -Ithird_party -Ithird_party/shnext \
 	-DEZ_CHEATS_HTTP_PORT=$(HTTP_PORT) \
 	-DEZ_CHEATS_FRONTEND_PATH='"$(abspath $(FRONTEND_ASSET))"'
 CXXFLAGS := -std=c++20 -nostdlib++ -Wall -Wextra -Werror -Os
-PS5_LIBS := -lSceSystemService
+PS5_LIBS := -lSceSystemService -lpthread
 
 ifeq ($(SHNEXT_KEYSTONE),1)
 ifeq ($(wildcard $(PS5_PAYLOAD_SDK)/target/lib/libc++.a),)
@@ -117,6 +116,9 @@ build/host-tests/shnext/cJSON.o: third_party/shnext/cJSON.cpp third_party/shnext
 
 host-test: $(HOST_PARSER_C_OBJECTS)
 	mkdir -p build/host-tests
+	$(HOST_CXX) $(HOST_TEST_FLAGS) -c -o build/host-tests/http_server.o \
+		src/http/http_server.cpp
+	$(HOST_CXX) $(HOST_TEST_FLAGS) -c -o build/host-tests/main.o src/main.cpp
 	$(HOST_CXX) $(HOST_TEST_FLAGS) \
 		-o build/host-tests/http_routes tests/http_routes.cpp \
 		src/application/in_memory_cheat_service.cpp

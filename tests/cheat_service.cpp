@@ -146,7 +146,7 @@ int main() {
   platform.clear_game();
   assert(service.refresh());
   assert(service.snapshot(snapshot));
-  assert(!snapshot.connected && !snapshot.has_game && snapshot.cheat_count == 0);
+  assert(snapshot.connected && !snapshot.has_game && snapshot.cheat_count == 0);
 
   assert(unlink(path) == 0);
   assert(rmdir(directory) == 0);

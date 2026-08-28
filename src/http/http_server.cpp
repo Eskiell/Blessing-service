@@ -25,9 +25,12 @@ constexpr size_t kResponseLimit = 48 * 1024;
 constexpr const char* kHealth = R"({"status":"ok"})";
 constexpr const char* kVersion =
     R"({"name":"ez-cheats","version":"0.1.0","apiVersion":1})";
-constexpr const char* kNotFound = R"({"error":"not_found"})";
-constexpr const char* kMethodNotAllowed = R"({"error":"method_not_allowed"})";
-constexpr const char* kBadRequest = R"({"error":"bad_request"})";
+constexpr const char* kNotFound =
+    R"({"error":"not_found","message":"Route was not found."})";
+constexpr const char* kMethodNotAllowed =
+    R"({"error":"method_not_allowed","message":"Method is not allowed for this route."})";
+constexpr const char* kBadRequest =
+    R"({"error":"bad_request","message":"Request body or target is invalid."})";
 
 bool send_all(int fd, const void* data, size_t size) {
   const auto* bytes = static_cast<const unsigned char*>(data);
@@ -70,6 +73,20 @@ void respond_json(int fd, int status, const char* reason, const char* body,
                   const char* extra_headers = "") {
   respond(fd, status, reason, "application/json; charset=utf-8", body,
           strlen(body), extra_headers);
+}
+
+void respond_error(int fd, int status, const char* reason, const char* code,
+                   const char* message) {
+  char response[512]{};
+  JsonWriter json{response, sizeof(response)};
+  if (!json.append("{\"error\":") || !json.quoted(code) ||
+      !json.append(",\"message\":") || !json.quoted(message) ||
+      !json.append("}")) {
+    respond_json(fd, 500, "Internal Server Error",
+                 R"({"error":"response_too_large","message":"Could not serialize error response."})");
+    return;
+  }
+  respond_json(fd, status, reason, json.data());
 }
 
 bool parse_request_line(char* request, char*& method, char*& target) {
@@ -177,6 +194,12 @@ bool write_state(JsonWriter& json, const domain::ServiceSnapshot& state) {
              !json.quoted(state.game.platform) || !json.append("}")) {
     return false;
   }
+  if (!json.append(",\"error\":")) return false;
+  if (state.error[0] == '\0') {
+    if (!json.append("null")) return false;
+  } else if (!json.quoted(state.error)) {
+    return false;
+  }
   if (!json.append(",\"cheats\":[")) return false;
   for (size_t i = 0; i < state.cheat_count; ++i) {
     if ((i > 0 && !json.append(",")) || !write_cheat(json, state.cheats[i])) return false;
@@ -212,9 +235,13 @@ void handle_client(int fd, domain::ICheatService& cheat_service) {
       char response[kResponseLimit]{};
       JsonWriter json{response, sizeof(response)};
       domain::ServiceSnapshot snapshot{};
-      if (!cheat_service.refresh() || !cheat_service.snapshot(snapshot) ||
-          !write_state(json, snapshot)) {
-        respond_json(fd, 500, "Internal Server Error", R"({"error":"response_too_large"})");
+      cheat_service.refresh();
+      if (!cheat_service.snapshot(snapshot)) {
+        respond_error(fd, 503, "Service Unavailable", "service_unavailable",
+                      "Cheat service state is unavailable.");
+      } else if (!write_state(json, snapshot)) {
+        respond_error(fd, 500, "Internal Server Error", "response_too_large",
+                      "Cheat state exceeds the response limit.");
       } else {
         respond_json(fd, 200, "OK", json.data());
       }
@@ -229,13 +256,37 @@ void handle_client(int fd, domain::ICheatService& cheat_service) {
       }
       domain::CheatEntry updated{};
       if (!cheat_service.set_enabled(id, enabled, updated)) {
-        respond_json(fd, 404, "Not Found", kNotFound);
+        domain::ServiceSnapshot snapshot{};
+        if (!cheat_service.snapshot(snapshot)) {
+          respond_error(fd, 503, "Service Unavailable", "service_unavailable",
+                        "Cheat service state is unavailable.");
+          break;
+        }
+        if (!snapshot.has_game) {
+          respond_error(fd, 409, "Conflict", "no_game",
+                        "No game is currently running.");
+          break;
+        }
+        bool found = false;
+        for (size_t i = 0; i < snapshot.cheat_count; ++i) {
+          if (snapshot.cheats[i].id == id) found = true;
+        }
+        if (!found) {
+          respond_error(fd, 404, "Not Found", "cheat_not_found",
+                        "Cheat id was not found for the current game.");
+          break;
+        }
+        respond_error(fd, 422, "Unprocessable Content", "apply_failed",
+                      snapshot.error[0] == '\0'
+                          ? "The cheat could not be applied."
+                          : snapshot.error);
         break;
       }
       char response[1024]{};
       JsonWriter json{response, sizeof(response)};
       if (!write_cheat(json, updated)) {
-        respond_json(fd, 500, "Internal Server Error", R"({"error":"response_too_large"})");
+        respond_error(fd, 500, "Internal Server Error", "response_too_large",
+                      "Cheat response exceeds the response limit.");
       } else {
         respond_json(fd, 200, "OK", json.data());
       }

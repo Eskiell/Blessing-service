@@ -105,10 +105,9 @@ Nesta primeira fundação estão disponíveis:
 - `GET /health`
 - `GET /api/v1/version`
 
-Durante a evolução do domínio, `GET /api/v1/cheats` e
-`PUT /api/v1/cheats/:id` usam um serviço em memória. Ele existe para validar o
-contrato e o frontend antes da integração com parsers e memória do PS5; nenhum
-patch real é aplicado nesta etapa.
+`GET /api/v1/cheats` e `PUT /api/v1/cheats/:id` usam o serviço real. O payload
+detecta o jogo pelo adaptador PS5, carrega `/data/ez-cheats/cheats`, seleciona o
+backend de memória e confirma as escritas antes de publicar o estado ativo.
 
 ## Contrato esperado do backend
 
@@ -118,6 +117,7 @@ patch real é aplicado nesta etapa.
 {
   "connected": true,
   "backend": "mdbg",
+  "error": null,
   "game": {
     "titleId": "CUSA00001",
     "name": "Jogo em execução",
@@ -126,7 +126,7 @@ patch real é aplicado nesta etapa.
   },
   "cheats": [
     {
-      "id": "0",
+      "id": 0,
       "name": "Vida infinita",
       "description": "Mantém a vida no valor máximo",
       "author": "Autor",
@@ -146,3 +146,8 @@ Corpo:
 
 A resposta deve devolver ao menos `id` e `enabled` com o estado efetivamente
 aplicado pelo motor de cheats.
+
+Erros usam o formato `{"error":"codigo","message":"detalhes"}`. Toggle sem
+jogo responde `409`, ID ausente responde `404`, falha de módulo ou memória
+responde `422` e indisponibilidade interna do serviço responde `503`. Todas as
+respostas de estado usam `Cache-Control: no-store`.

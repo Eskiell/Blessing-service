@@ -155,7 +155,7 @@ bool CheatService::snapshot(domain::ServiceSnapshot& output) const {
   memset(&output, 0, sizeof(output));
   MutexLock lock(mutex_, mutex_ready_);
   if (!lock) return false;
-  output.connected = has_game_;
+  output.connected = true;
   snprintf(output.backend, sizeof(output.backend), "%s", memory_.name());
   output.has_game = has_game_;
   if (has_game_) output.game = game_;
