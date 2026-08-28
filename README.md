@@ -60,6 +60,19 @@ recarregar automaticamente um arquivo substituído ou editado. Árvores aninhada
 de distribuição não são processadas pelo payload; eventual flatten deve ser
 feito por uma ferramenta de instalação separada.
 
+## Plataforma de jogo
+
+O adaptador PS5 consulta o BigApp em execução, relaciona seu App ID aos
+processos do sistema e preenche PID, Title ID, nome, versão, plataforma e nome
+do processo. Metadados são lidos dos `param.json` do PS5 ou `param.sfo` do PS4.
+Também é possível localizar módulos carregados por nome e obter suas seções de
+memória. Quando nenhum jogo está aberto, a consulta retorna normalmente sem
+contexto (`pid` e `appId` iguais a `-1`).
+
+Headers e chamadas específicas do SDK ficam em
+`src/platform/ps5_game_platform.cpp`; domínio, serviço e testes host não
+incluem dependências do SDK.
+
 Nesta primeira fundação estão disponíveis:
 
 - `GET /`

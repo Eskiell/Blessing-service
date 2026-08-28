@@ -56,6 +56,22 @@ struct GameContext {
   char process_name[64];
 };
 
+constexpr size_t kMaxModuleSections = 4;
+
+struct ModuleSection {
+  uint64_t address;
+  uint64_t size;
+  uint32_t protection;
+};
+
+struct ModuleInfo {
+  char name[128];
+  char path[1024];
+  uint64_t handle;
+  ModuleSection sections[kMaxModuleSections];
+  size_t section_count;
+};
+
 struct ServiceState {
   bool connected;
   const char* backend;

@@ -29,6 +29,10 @@ class IMemoryBackend {
 class IGamePlatform {
  public:
   virtual bool current_game(GameContext& output) = 0;
+  virtual bool find_module(int pid, const char* module_name,
+                           ModuleInfo& output) = 0;
+  virtual bool find_module_in_app(int app_id, const char* module_name,
+                                  int& pid, ModuleInfo& output) = 0;
 
  protected:
   ~IGamePlatform() = default;
