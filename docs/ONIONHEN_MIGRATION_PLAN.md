@@ -101,7 +101,7 @@ servidor e serviço C++
 - Modelos não incluem headers do SDK do PS5.
 - Testes verificam serialização e validação básica das requisições.
 
-### [ ] PR 03 — Núcleo comum e parser JSON
+### [x] PR 03 — Núcleo comum e parser JSON
 
 **Objetivo:** importar a primeira parte funcional e portável do OnionHEN.
 
