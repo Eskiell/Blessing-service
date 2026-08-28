@@ -81,7 +81,7 @@ servidor e serviço C++
 - O ELF inicia no PS5 e serve o frontend.
 - `GET /health` responde sem depender do OnionHEN.
 
-### [ ] PR 02 — Contratos de domínio e API
+### [x] PR 02 — Contratos de domínio e API
 
 **Objetivo:** definir fronteiras estáveis antes de importar implementações.
 
