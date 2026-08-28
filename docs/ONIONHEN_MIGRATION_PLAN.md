@@ -328,7 +328,7 @@ servidor e serviço C++
 - A resposta da API reflete o estado confirmado pelo aplicador.
 - A UI continua funcional após troca de jogo e hot reload.
 
-### [ ] PR 13 — Robustez, empacotamento e documentação operacional
+### [x] PR 13 — Robustez, empacotamento e documentação operacional
 
 **Objetivo:** preparar uma primeira versão utilizável e reproduzível.
 
