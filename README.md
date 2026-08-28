@@ -1,30 +1,57 @@
-# EZHELIT Store
+# EZ Cheats Frontend
 
-O projeto gera um único payload:
+Interface Vue 3 para listar e alternar cheats do jogo em execução. O build usa
+Vite e gera um único `dist/index.html`, adequado para ser incorporado ao futuro
+payload/daemon do EZ Cheats.
 
-```text
-ezhelit-store.elf
+## Desenvolvimento
+
+```sh
+cd frontend
+npm install
+npm run dev
 ```
-
-Ao ser enviado para o PS5, ele:
-
-- instala ou atualiza o tile `EZHELIT Store` na área Media;
-- embute `param.json` e `icon0.png`;
-- inicia o servidor HTTP na porta `5911`;
-- serve a interface Vue 3 embutida;
-- mantém o worker de download em execução quando a tela é fechada.
-
-O tile instalado não contém `eboot.elf`; ele abre o servidor mantido pelo
-payload em `http://127.0.0.1:5911/`.
 
 ## Build
 
 ```sh
-export PS5_PAYLOAD_SDK=/caminho/para/ps5-payload-sdk
-make
+cd frontend
+npm run build
 ```
 
-O build executa o Vite, gera um único HTML e o incorpora ao ELF. Para gerar a
-interface HTML anterior como fallback, use `make legacy-ui`.
+## Contrato esperado do backend
 
-Consulte [docs](./docs/README.md) para o planejamento.
+### `GET /api/v1/cheats`
+
+```json
+{
+  "connected": true,
+  "backend": "mdbg",
+  "game": {
+    "titleId": "CUSA00001",
+    "name": "Jogo em execução",
+    "version": "1.00",
+    "platform": "ps4"
+  },
+  "cheats": [
+    {
+      "id": "0",
+      "name": "Vida infinita",
+      "description": "Mantém a vida no valor máximo",
+      "author": "Autor",
+      "enabled": false
+    }
+  ]
+}
+```
+
+### `PUT /api/v1/cheats/:id`
+
+Corpo:
+
+```json
+{ "enabled": true }
+```
+
+A resposta deve devolver ao menos `id` e `enabled` com o estado efetivamente
+aplicado pelo motor de cheats.
