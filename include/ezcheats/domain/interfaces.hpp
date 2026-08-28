@@ -9,6 +9,7 @@ namespace ezcheats::domain {
 
 class ICheatParser {
  public:
+  virtual const char* name() const = 0;
   virtual bool parse(const uint8_t* data, size_t size, CheatFile& output) = 0;
 
  protected:

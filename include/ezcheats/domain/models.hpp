@@ -7,6 +7,9 @@ namespace ezcheats::domain {
 
 constexpr size_t kMaxPatchBytes = 1024;
 constexpr size_t kMaxCheats = 64;
+constexpr size_t kMaxPatchesPerCheat = 256;
+constexpr size_t kMaxAuthors = 16;
+constexpr size_t kAuthorNameSize = 64;
 
 struct Patch {
   uint64_t offset;
@@ -28,13 +31,19 @@ struct CheatEntry {
   bool enabled;
   Patch* patches;
   size_t patch_count;
+  size_t patch_capacity;
 };
 
 struct CheatFile {
   char name[128];
   char process[128];
+  char authors[kMaxAuthors][kAuthorNameSize];
+  size_t author_count;
   CheatEntry* cheats;
   size_t cheat_count;
+  size_t cheat_capacity;
+  int master_code_id;
+  int last_applied_pid;
 };
 
 struct GameContext {
