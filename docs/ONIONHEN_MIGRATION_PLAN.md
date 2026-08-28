@@ -242,7 +242,7 @@ servidor e serviço C++
 - O restante do domínio não inclui headers do PS5 SDK.
 - Ausência de jogo é representada como estado normal, não como crash.
 
-### [ ] PR 09 — Backends de acesso à memória
+### [x] PR 09 — Backends de acesso à memória
 
 **Objetivo:** permitir leitura e escrita no processo do jogo.
 
