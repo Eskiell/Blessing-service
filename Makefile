@@ -26,6 +26,7 @@ SOURCES := \
 	src/main.cpp \
 	src/application/in_memory_cheat_service.cpp \
 	src/domain/owned_cheat_file.cpp \
+	src/domain/memory_backend.cpp \
 	src/parsers/parser_utils.cpp \
 	src/parsers/json_cheat_parser.cpp \
 	src/parsers/shn_cheat_parser.cpp \
@@ -35,6 +36,7 @@ SOURCES := \
 	src/parsers/cheat_parser_factory.cpp \
 	src/repository/file_cheat_repository.cpp \
 	src/platform/ps5_game_platform.cpp \
+	src/memory/ps5_memory_backends.cpp \
 	src/http/http_server.cpp \
 	src/assets/embedded_frontend.cpp
 PARSER_C_OBJECTS := build/ps5/mc4/aes.o build/ps5/mc4/base64.o \
@@ -143,6 +145,11 @@ host-test: $(HOST_PARSER_C_OBJECTS)
 		-o build/host-tests/game_platform tests/game_platform.cpp \
 		src/platform/fake_game_platform.cpp
 	./build/host-tests/game_platform
+	$(HOST_CXX) $(HOST_TEST_FLAGS) \
+		-o build/host-tests/memory_backends tests/memory_backends.cpp \
+		src/domain/memory_backend.cpp src/domain/owned_cheat_file.cpp \
+		src/memory/fake_memory_backend.cpp
+	./build/host-tests/memory_backends
 
 deploy: $(ELF)
 	$(PS5_DEPLOY) -h $(PS5_HOST) -p $(PS5_PORT) $<

@@ -18,9 +18,13 @@ class ICheatParser {
 
 class IMemoryBackend {
  public:
+  virtual const char* name() const = 0;
   virtual bool read(int pid, uint64_t address, void* output, size_t size) = 0;
   virtual bool write(int pid, uint64_t address, const void* input,
                      size_t size) = 0;
+  virtual bool map_code_cave(int pid, uint64_t address, size_t size) = 0;
+  bool write_verified(int pid, uint64_t address, const void* input,
+                      size_t size);
 
  protected:
   ~IMemoryBackend() = default;
