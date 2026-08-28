@@ -219,7 +219,7 @@ servidor e serviço C++
 - Troca ou edição do arquivo invalida o cache.
 - Caminhos inválidos não escapam do diretório configurado.
 
-### [ ] PR 08 — Adaptador de jogo, processo e módulos do PS5
+### [x] PR 08 — Adaptador de jogo, processo e módulos do PS5
 
 **Objetivo:** implementar `IGamePlatform` usando o SDK C.
 
