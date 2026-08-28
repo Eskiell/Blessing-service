@@ -126,7 +126,7 @@ servidor e serviço C++
 - Entradas inválidas falham sem vazamento ou estado parcial.
 - A camada compila e é testada sem PS5 SDK.
 
-### [ ] PR 04 — Parser SHN
+### [x] PR 04 — Parser SHN
 
 **Objetivo:** adicionar suporte aos trainers XML `.shn`.
 
