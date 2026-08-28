@@ -4,6 +4,9 @@ Interface Vue 3 para listar e alternar cheats do jogo em execução. O build usa
 Vite e gera um único `dist/index.html`, adequado para ser incorporado ao futuro
 payload/daemon do EZ Cheats.
 
+O trabalho de migração do motor do OnionHEN está organizado em PRs no
+[`docs/ONIONHEN_MIGRATION_PLAN.md`](docs/ONIONHEN_MIGRATION_PLAN.md).
+
 ## Desenvolvimento
 
 ```sh
