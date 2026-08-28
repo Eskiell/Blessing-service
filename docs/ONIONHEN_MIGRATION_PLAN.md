@@ -167,7 +167,7 @@ servidor e serviço C++
 - Fixture MC4 conhecida produz o mesmo resultado do OnionHEN.
 - Falhas de Base64, padding ou criptografia são tratadas com segurança.
 
-### [ ] PR 06 — Parser ShnExt
+### [x] PR 06 — Parser ShnExt
 
 **Objetivo:** completar o suporte aos formatos atuais do OnionHEN.
 
