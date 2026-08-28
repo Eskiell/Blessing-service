@@ -145,7 +145,7 @@ servidor e serviço C++
 - Fixtures `.shn` reais e sintéticas passam nos testes do host.
 - O parser não depende do backend de memória.
 
-### [ ] PR 05 — Parser MC4 e dependências criptográficas
+### [x] PR 05 — Parser MC4 e dependências criptográficas
 
 **Objetivo:** adicionar suporte aos arquivos criptografados `.mc4`.
 
