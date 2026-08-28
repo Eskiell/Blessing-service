@@ -165,6 +165,21 @@ void rejects_invalid_inputs_and_resets_pid_state() {
                              sizeof(status)) == ApplyResult::invalid_cheat);
 }
 
+void reports_missing_module_name() {
+  ezcheats::platform::FakeGamePlatform platform;
+  FakeMemoryBackend memory;
+  CheatApplier applier(platform, memory);
+  ezcheats::domain::OwnedCheatFile owned;
+  CheatEntry& cheat = add_cheat(owned.get(), 4, "Walk On Water", 1);
+  set_patch(cheat.patches[0], 0x20, 0xaa);
+  char status[256]{};
+
+  assert(applier.set_enabled(game(), owned.get(), 4, true, status,
+                             sizeof(status)) ==
+         ApplyResult::module_not_found);
+  assert(strstr(status, "module not found: eboot.bin") != nullptr);
+}
+
 }  // namespace
 
 int main() {
@@ -173,4 +188,5 @@ int main() {
   maps_cave_when_original_address_is_unreadable();
   resolves_master_code_dependency();
   rejects_invalid_inputs_and_resets_pid_state();
+  reports_missing_module_name();
 }

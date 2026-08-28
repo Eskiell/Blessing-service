@@ -4,11 +4,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <sys/sysctl.h>
 #include <sys/user.h>
 #include <unistd.h>
+
+#include <ps5/kernel.h>
 
 namespace ezcheats::platform {
 namespace {
@@ -62,6 +65,8 @@ struct NativeModuleInfo {
 };
 
 constexpr size_t kMaxMetadataSize = 256 * 1024;
+constexpr intptr_t kProcessSharedObjectOffset = 0x3e8;
+constexpr intptr_t kSharedLibraryImagebaseOffset = 0x30;
 
 void copy_text(char* output, size_t output_size, const char* value) {
   if (output == nullptr || output_size == 0) return;
@@ -356,6 +361,51 @@ bool find_native_module(int pid, const char* name,
   return false;
 }
 
+bool find_eboot_imagebase(int pid, const char* name,
+                          domain::ModuleInfo& output) {
+  if (pid < 0 || name == nullptr || name[0] == '\0') return false;
+  char process_name[64]{};
+  if (sceKernelGetProcessName(pid, process_name) < 0 ||
+      (strcmp(name, "eboot") != 0 && strcmp(name, "eboot.bin") != 0 &&
+       strcmp(name, process_name) != 0)) {
+    return false;
+  }
+
+  const intptr_t process = kernel_get_proc(pid);
+  intptr_t shared_object = 0;
+  intptr_t eboot = 0;
+  uint64_t imagebase = 0;
+  if (process == 0 ||
+      kernel_copyout(process + kProcessSharedObjectOffset, &shared_object,
+                     sizeof(shared_object)) < 0 ||
+      shared_object == 0 ||
+      kernel_copyout(shared_object, &eboot, sizeof(eboot)) < 0 || eboot == 0) {
+    return false;
+  }
+  if (kernel_copyout(eboot + kSharedLibraryImagebaseOffset, &imagebase,
+                     sizeof(imagebase)) < 0 ||
+      imagebase == 0) {
+    if (kernel_copyout(eboot + 0x38, &imagebase, sizeof(imagebase)) < 0 ||
+        imagebase == 0) {
+      return false;
+    }
+  }
+
+  memset(&output, 0, sizeof(output));
+  copy_text(output.name, sizeof(output.name), name);
+  copy_text(output.path, sizeof(output.path), name);
+  output.handle = static_cast<uint64_t>(eboot);
+  output.sections[0] = {imagebase, 0, PROT_READ | PROT_EXEC};
+  output.section_count = 1;
+  return true;
+}
+
+bool find_module_with_fallback(int pid, const char* name,
+                               domain::ModuleInfo& output) {
+  return find_native_module(pid, name, output) ||
+         find_eboot_imagebase(pid, name, output);
+}
+
 }  // namespace
 
 bool Ps5GamePlatform::current_game(domain::GameContext& output) {
@@ -384,7 +434,7 @@ bool Ps5GamePlatform::current_game(domain::GameContext& output) {
 bool Ps5GamePlatform::find_module(int pid, const char* module_name,
                                   domain::ModuleInfo& output) {
   memset(&output, 0, sizeof(output));
-  return find_native_module(pid, module_name, output);
+  return find_module_with_fallback(pid, module_name, output);
 }
 
 bool Ps5GamePlatform::find_module_in_app(int app_id, const char* module_name,
@@ -406,7 +456,7 @@ bool Ps5GamePlatform::find_module_in_app(int app_id, const char* module_name,
       }
       cursor += process->ki_structsize;
       if (process_matches_app(process->ki_pid, app_id, nullptr) &&
-          find_native_module(process->ki_pid, module_name, output)) {
+          find_module_with_fallback(process->ki_pid, module_name, output)) {
         pid = process->ki_pid;
         free(table);
         return true;
@@ -416,7 +466,7 @@ bool Ps5GamePlatform::find_module_in_app(int app_id, const char* module_name,
   }
   for (int candidate = 1; candidate <= 9999; ++candidate) {
     if (process_matches_app(candidate, app_id, nullptr) &&
-        find_native_module(candidate, module_name, output)) {
+        find_module_with_fallback(candidate, module_name, output)) {
       pid = candidate;
       return true;
     }
