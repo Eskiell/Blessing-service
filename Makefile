@@ -25,6 +25,7 @@ FRONTEND_MARKER := $(FRONTEND_DIR)/node_modules/.package-lock.json
 SOURCES := \
 	src/main.cpp \
 	src/application/in_memory_cheat_service.cpp \
+	src/application/cheat_applier.cpp \
 	src/domain/owned_cheat_file.cpp \
 	src/domain/memory_backend.cpp \
 	src/parsers/parser_utils.cpp \
@@ -150,6 +151,12 @@ host-test: $(HOST_PARSER_C_OBJECTS)
 		src/domain/memory_backend.cpp src/domain/owned_cheat_file.cpp \
 		src/memory/fake_memory_backend.cpp
 	./build/host-tests/memory_backends
+	$(HOST_CXX) $(HOST_TEST_FLAGS) \
+		-o build/host-tests/cheat_applier tests/cheat_applier.cpp \
+		src/application/cheat_applier.cpp src/domain/memory_backend.cpp \
+		src/domain/owned_cheat_file.cpp src/memory/fake_memory_backend.cpp \
+		src/platform/fake_game_platform.cpp
+	./build/host-tests/cheat_applier
 
 deploy: $(ELF)
 	$(PS5_DEPLOY) -h $(PS5_HOST) -p $(PS5_PORT) $<

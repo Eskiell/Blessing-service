@@ -15,6 +15,11 @@ bool FakeMemoryBackend::range(uint64_t address, size_t size,
 
 bool FakeMemoryBackend::read(int pid, uint64_t address, void* output,
                              size_t size) {
+  ++read_calls_;
+  if (fail_read_call_ != 0 && read_calls_ == fail_read_call_) {
+    fail_read_call_ = 0;
+    return false;
+  }
   size_t offset = 0;
   if (pid < 0 || output == nullptr || !range(address, size, offset)) {
     return false;
@@ -25,6 +30,11 @@ bool FakeMemoryBackend::read(int pid, uint64_t address, void* output,
 
 bool FakeMemoryBackend::write(int pid, uint64_t address, const void* input,
                               size_t size) {
+  ++write_calls_;
+  if (fail_write_call_ != 0 && write_calls_ == fail_write_call_) {
+    fail_write_call_ = 0;
+    return false;
+  }
   size_t offset = 0;
   if (pid < 0 || input == nullptr || !range(address, size, offset)) {
     return false;
