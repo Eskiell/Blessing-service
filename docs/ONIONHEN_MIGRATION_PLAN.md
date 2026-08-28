@@ -265,7 +265,7 @@ servidor e serviço C++
 - Backend indisponível gera erro claro na API.
 - Falhas nunca deixam processo anexado involuntariamente.
 
-### [ ] PR 10 — Aplicador e reversão de cheats
+### [x] PR 10 — Aplicador e reversão de cheats
 
 **Objetivo:** portar a lógica que transforma os patches em alterações reais.
 
