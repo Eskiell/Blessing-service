@@ -5,12 +5,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <netinet/in.h>
+#include <stdlib.h>
 #include <sys/socket.h>
 
 #include <stddef.h>
 
 #include "ezcheats/assets/embedded_frontend.hpp"
 #include "ezcheats/http/http_routes.hpp"
+#include "ezcheats/http/json_writer.hpp"
 #include "ezcheats/platform/unique_fd.hpp"
 #include "ezcheats/version.hpp"
 
@@ -19,6 +21,7 @@ namespace {
 
 constexpr int kBacklog = 8;
 constexpr size_t kRequestLimit = 8 * 1024;
+constexpr size_t kResponseLimit = 48 * 1024;
 constexpr const char* kHealth = R"({"status":"ok"})";
 constexpr const char* kVersion =
     R"({"name":"ez-cheats","version":"0.1.0","apiVersion":1})";
@@ -88,14 +91,103 @@ bool parse_request_line(char* request, char*& method, char*& target) {
   return true;
 }
 
-void handle_client(int fd) {
-  char request[kRequestLimit + 1]{};
-  const auto count = ::recv(fd, request, kRequestLimit, 0);
-  if (count <= 0) {
-    return;
+const char* find_header(const char* headers, const char* name) {
+  const size_t name_size = strlen(name);
+  for (const char* line = headers; *line != '\0'; ++line) {
+    size_t i = 0;
+    while (i < name_size && line[i] != '\0') {
+      char a = line[i];
+      char b = name[i];
+      if (a >= 'A' && a <= 'Z') a = static_cast<char>(a - 'A' + 'a');
+      if (b >= 'A' && b <= 'Z') b = static_cast<char>(b - 'A' + 'a');
+      if (a != b) break;
+      ++i;
+    }
+    if (i == name_size && line[i] == ':') return line + i + 1;
   }
+  return nullptr;
+}
 
-  request[static_cast<size_t>(count)] = '\0';
+bool read_request(int fd, char* request, size_t capacity, char*& body) {
+  size_t received = 0;
+  char* header_end = nullptr;
+  size_t expected = 0;
+  while (received + 1 < capacity) {
+    const auto count = ::recv(fd, request + received, capacity - received - 1, 0);
+    if (count < 0 && errno == EINTR) continue;
+    if (count <= 0) return false;
+    received += static_cast<size_t>(count);
+    request[received] = '\0';
+
+    if (header_end == nullptr) {
+      header_end = strstr(request, "\r\n\r\n");
+      if (header_end == nullptr) continue;
+      body = header_end + 4;
+      const char* length = find_header(request, "Content-Length");
+      if (length != nullptr) expected = static_cast<size_t>(strtoul(length, nullptr, 10));
+      if (expected > capacity - static_cast<size_t>(body - request) - 1) return false;
+    }
+    if (received >= static_cast<size_t>(body - request) + expected) return true;
+  }
+  return false;
+}
+
+bool parse_toggle(const char* target, const char* body, uint32_t& id,
+                  bool& enabled) {
+  constexpr const char* prefix = "/api/v1/cheats/";
+  char* end = nullptr;
+  const unsigned long parsed = strtoul(target + strlen(prefix), &end, 10);
+  if (end == target + strlen(prefix) || (*end != '\0' && *end != '?') ||
+      parsed > UINT32_MAX) {
+    return false;
+  }
+  const char* field = strstr(body, "\"enabled\"");
+  if (field == nullptr || (field = strchr(field, ':')) == nullptr) return false;
+  ++field;
+  while (*field == ' ' || *field == '\t' || *field == '\r' || *field == '\n') ++field;
+  if (strncmp(field, "true", 4) == 0) {
+    enabled = true;
+  } else if (strncmp(field, "false", 5) == 0) {
+    enabled = false;
+  } else {
+    return false;
+  }
+  id = static_cast<uint32_t>(parsed);
+  return true;
+}
+
+bool write_cheat(JsonWriter& json, const domain::CheatEntry& cheat) {
+  return json.append("{\"id\":") && json.number(cheat.id) &&
+         json.append(",\"name\":") && json.quoted(cheat.name) &&
+         json.append(",\"description\":") && json.quoted(cheat.description) &&
+         json.append(",\"author\":") && json.quoted(cheat.author) &&
+         json.append(",\"enabled\":") && json.boolean(cheat.enabled) &&
+         json.append("}");
+}
+
+bool write_state(JsonWriter& json, const domain::ServiceState& state) {
+  if (!json.append("{\"connected\":") || !json.boolean(state.connected) ||
+      !json.append(",\"backend\":") || !json.quoted(state.backend)) return false;
+  if (state.game == nullptr) {
+    if (!json.append(",\"game\":null")) return false;
+  } else if (!json.append(",\"game\":{\"titleId\":") ||
+             !json.quoted(state.game->title_id) || !json.append(",\"name\":") ||
+             !json.quoted(state.game->name) || !json.append(",\"version\":") ||
+             !json.quoted(state.game->version) || !json.append(",\"platform\":") ||
+             !json.quoted(state.game->platform) || !json.append("}")) {
+    return false;
+  }
+  if (!json.append(",\"cheats\":[")) return false;
+  for (size_t i = 0; i < state.cheat_count; ++i) {
+    if ((i > 0 && !json.append(",")) || !write_cheat(json, state.cheats[i])) return false;
+  }
+  return json.append("]}");
+}
+
+void handle_client(int fd, domain::ICheatService& cheat_service) {
+  char request[kRequestLimit + 1]{};
+  char* body = nullptr;
+  if (!read_request(fd, request, sizeof(request), body)) return;
   char* method = nullptr;
   char* target = nullptr;
   if (!parse_request_line(request, method, target)) {
@@ -116,6 +208,37 @@ void handle_client(int fd) {
     case Route::version:
       respond_json(fd, 200, "OK", kVersion);
       break;
+    case Route::cheats: {
+      char response[kResponseLimit]{};
+      JsonWriter json{response, sizeof(response)};
+      if (!write_state(json, cheat_service.state())) {
+        respond_json(fd, 500, "Internal Server Error", R"({"error":"response_too_large"})");
+      } else {
+        respond_json(fd, 200, "OK", json.data());
+      }
+      break;
+    }
+    case Route::cheat_toggle: {
+      uint32_t id = 0;
+      bool enabled = false;
+      if (!parse_toggle(target, body, id, enabled)) {
+        respond_json(fd, 400, "Bad Request", kBadRequest);
+        break;
+      }
+      domain::CheatEntry updated{};
+      if (!cheat_service.set_enabled(id, enabled, updated)) {
+        respond_json(fd, 404, "Not Found", kNotFound);
+        break;
+      }
+      char response[1024]{};
+      JsonWriter json{response, sizeof(response)};
+      if (!write_cheat(json, updated)) {
+        respond_json(fd, 500, "Internal Server Error", R"({"error":"response_too_large"})");
+      } else {
+        respond_json(fd, 200, "OK", json.data());
+      }
+      break;
+    }
     case Route::method_not_allowed:
       respond_json(fd, 405, "Method Not Allowed", kMethodNotAllowed,
                    "Allow: GET\r\n");
@@ -128,7 +251,9 @@ void handle_client(int fd) {
 
 }  // namespace
 
-HttpServer::HttpServer(uint16_t port) noexcept : port_(port) {}
+HttpServer::HttpServer(uint16_t port,
+                       domain::ICheatService& cheat_service) noexcept
+    : port_(port), cheat_service_(cheat_service) {}
 
 int HttpServer::run() {
   platform::UniqueFd server{::socket(AF_INET, SOCK_STREAM, 0)};
@@ -168,7 +293,7 @@ int HttpServer::run() {
       perror("accept");
       return 1;
     }
-    handle_client(client.get());
+    handle_client(client.get(), cheat_service_);
   }
 }
 

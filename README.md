@@ -45,6 +45,11 @@ Nesta primeira fundação estão disponíveis:
 - `GET /health`
 - `GET /api/v1/version`
 
+Durante a evolução do domínio, `GET /api/v1/cheats` e
+`PUT /api/v1/cheats/:id` usam um serviço em memória. Ele existe para validar o
+contrato e o frontend antes da integração com parsers e memória do PS5; nenhum
+patch real é aplicado nesta etapa.
+
 ## Contrato esperado do backend
 
 ### `GET /api/v1/cheats`

@@ -16,6 +16,7 @@ FRONTEND_ASSET := $(FRONTEND_DIR)/dist/index.html
 FRONTEND_MARKER := $(FRONTEND_DIR)/node_modules/.package-lock.json
 SOURCES := \
 	src/main.cpp \
+	src/application/in_memory_cheat_service.cpp \
 	src/http/http_server.cpp \
 	src/assets/embedded_frontend.cpp
 HEADERS := $(shell find include -type f -name '*.hpp')
@@ -43,7 +44,8 @@ $(ELF): $(SOURCES) $(HEADERS) $(FRONTEND_ASSET)
 host-test:
 	mkdir -p build/host-tests
 	$(HOST_CXX) -std=c++20 -Wall -Wextra -Werror -Iinclude \
-		-o build/host-tests/http_routes tests/http_routes.cpp
+		-o build/host-tests/http_routes tests/http_routes.cpp \
+		src/application/in_memory_cheat_service.cpp
 	./build/host-tests/http_routes
 
 deploy: $(ELF)
