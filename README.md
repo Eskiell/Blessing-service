@@ -6,6 +6,8 @@ payload/daemon do EZ Cheats.
 
 O trabalho de migração do motor do OnionHEN está organizado em PRs no
 [`docs/ONIONHEN_MIGRATION_PLAN.md`](docs/ONIONHEN_MIGRATION_PLAN.md).
+Para entender a arquitetura e acompanhar o fluxo completo de um toggle, leia
+[`docs/CODE_ARCHITECTURE.md`](docs/CODE_ARCHITECTURE.md).
 Código adaptado e fixtures são identificados em
 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
