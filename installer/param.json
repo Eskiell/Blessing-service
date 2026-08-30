@@ -1,0 +1,14 @@
+{
+  "applicationCategoryType": 65536,
+  "titleId": "EZCHT0001",
+  "deeplinkUri": "http://127.0.0.1:5911/",
+  "localizedParameters": {
+    "defaultLanguage": "pt-BR",
+    "pt-BR": {
+      "titleName": "EZ Cheats"
+    },
+    "en-US": {
+      "titleName": "EZ Cheats"
+    }
+  }
+}

@@ -11,6 +11,13 @@ suportado.
 - [ ] O payload inicia e cria o diretório de cheats quando ausente.
 - [ ] `/health` e `/api/v1/version` respondem com `Cache-Control: no-store`.
 - [ ] O frontend abre pelo IP e porta configurados.
+- [ ] A primeira execução instala `EZ Cheats` na aba Mídia.
+- [ ] O tile abre `http://127.0.0.1:5911/` com a internet desativada.
+- [ ] Uma segunda execução não cria tile duplicado.
+- [ ] Uma build com assets alterados atualiza o tile existente.
+- [ ] Após reiniciar, o tile permanece e volta a funcionar quando o ELF é
+  executado novamente.
+- [ ] Falha induzida no instalador do tile não impede o backend de iniciar.
 
 ## Jogo e arquivos
 

@@ -1,5 +1,19 @@
 # Third-party notices
 
+## PS5 Media tile installer
+
+The Media-category tile installation flow in
+`src/platform/ps5_media_tile.cpp` was adapted from EZHELIT-TORRENT:
+
+- Local reference: `/Users/ezequiel/Downloads/EZHELIT-TORRENT`
+- Source paths: `engine/app_installer.cpp`, `engine/app_installer.hpp`,
+  `engine/app_config.hpp`, and `installer/param.json`
+- License: GNU General Public License, version 3
+
+The EZ Cheats adaptation uses its own title ID, manifest, original angel icon,
+namespace, paths and non-fatal startup integration. No torrent functionality or
+runtime dependency was imported.
+
 ## OnionHEN cheat engine
 
 The cheat parsing code under `src/parsers`, its supporting domain allocation

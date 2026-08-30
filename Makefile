@@ -7,6 +7,10 @@ NPM ?= npm
 HOST_CXX ?= c++
 HOST_CC ?= cc
 SHNEXT_KEYSTONE ?= 0
+
+ifneq ($(HTTP_PORT),5911)
+$(error HTTP_PORT must be 5911 because the persistent Media tile targets 127.0.0.1:5911)
+endif
 HOST_TEST_FLAGS := -std=c++20 -Wall -Wextra -Werror -Iinclude -Ithird_party \
 	-Ithird_party/shnext -DEZ_CHEATS_HAS_KEYSTONE=0 \
 	-fsanitize=address,undefined -fno-omit-frame-pointer
@@ -24,6 +28,8 @@ ELF := ez-cheats.elf
 FRONTEND_DIR := frontend
 FRONTEND_ASSET := $(FRONTEND_DIR)/dist/index.html
 FRONTEND_MARKER := $(FRONTEND_DIR)/node_modules/.package-lock.json
+MEDIA_PARAM_ASSET := installer/param.json
+MEDIA_ICON_ASSET := installer/icon0.png
 SOURCES := \
 	src/main.cpp \
 	src/application/cheat_service.cpp \
@@ -39,6 +45,7 @@ SOURCES := \
 	src/parsers/cheat_parser_factory.cpp \
 	src/repository/file_cheat_repository.cpp \
 	src/platform/ps5_game_platform.cpp \
+	src/platform/ps5_media_tile.cpp \
 	src/memory/ps5_memory_backends.cpp \
 	src/http/http_server.cpp \
 	src/assets/embedded_frontend.cpp
@@ -58,9 +65,12 @@ HEADERS := $(shell find include -type f -name '*.hpp')
 CPPFLAGS := -Iinclude -Ithird_party -Ithird_party/shnext \
 	-DEZ_CHEATS_HTTP_PORT=$(HTTP_PORT) \
 	-DEZ_CHEATS_DIRECTORY='"$(CHEATS_DIRECTORY)"' \
-	-DEZ_CHEATS_FRONTEND_PATH='"$(abspath $(FRONTEND_ASSET))"'
+	-DEZ_CHEATS_FRONTEND_PATH='"$(abspath $(FRONTEND_ASSET))"' \
+	-DEZ_CHEATS_MEDIA_PARAM_PATH='"$(abspath $(MEDIA_PARAM_ASSET))"' \
+	-DEZ_CHEATS_MEDIA_ICON_PATH='"$(abspath $(MEDIA_ICON_ASSET))"'
 CXXFLAGS := -std=c++20 -nostdlib++ -Wall -Wextra -Werror -Os
-PS5_LIBS := -lSceSystemService -lpthread
+PS5_LIBS := -lSceSystemService -lSceAppInstUtil -lSceUserService -lSceNet \
+	-lSceNetCtl -lpthread
 
 ifeq ($(MEMORY_BACKEND),automatic)
 CPPFLAGS += -DEZ_CHEATS_MEMORY_BACKEND=0
@@ -97,7 +107,8 @@ frontend-build: $(FRONTEND_MARKER)
 $(FRONTEND_ASSET): frontend-build
 	@test -s $@
 
-$(ELF): $(SOURCES) $(PARSER_C_OBJECTS) $(HEADERS) $(FRONTEND_ASSET)
+$(ELF): $(SOURCES) $(PARSER_C_OBJECTS) $(HEADERS) $(FRONTEND_ASSET) \
+	$(MEDIA_PARAM_ASSET) $(MEDIA_ICON_ASSET)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $(SOURCES) $(PARSER_C_OBJECTS) \
 		$(SHNEXT_LIBS) $(PS5_LIBS)
 
