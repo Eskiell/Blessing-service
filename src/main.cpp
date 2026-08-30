@@ -21,7 +21,7 @@ int main() {
   ezcheats::platform::Ps5GamePlatform platform;
   ezcheats::repository::FileCheatRepository repository;
   if (!repository.ensure_directory()) {
-    printf("EZ Cheats: could not create cheat directory %s\n",
+    printf("Blessing: could not create cheat directory %s\n",
            repository.directory());
     return 1;
   }
@@ -32,7 +32,7 @@ int main() {
   } else if (tile_result == ezcheats::platform::MediaTileResult::current) {
     tile_status = "current";
   }
-  printf("EZ Cheats: media tile=%s\n", tile_status);
+  printf("Blessing: media tile=%s\n", tile_status);
   constexpr auto requested_backend =
       static_cast<ezcheats::memory::MemoryBackendKind>(
           EZ_CHEATS_MEMORY_BACKEND);
@@ -42,7 +42,7 @@ int main() {
       ezcheats::memory::MemoryBackendFactory::create(
           requested_backend, firmware);
   if (memory == nullptr) return 1;
-  printf("EZ Cheats: directory=%s backend=%s firmware=0x%x\n",
+  printf("Blessing: directory=%s backend=%s firmware=0x%x\n",
          repository.directory(), memory->name(), firmware);
   ezcheats::application::CheatService cheat_service{platform, repository,
                                                      *memory};

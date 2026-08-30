@@ -24,7 +24,7 @@ constexpr size_t kRequestLimit = 8 * 1024;
 constexpr size_t kResponseLimit = 48 * 1024;
 constexpr const char* kHealth = R"({"status":"ok"})";
 constexpr const char* kVersion =
-    R"({"name":"ez-cheats","version":"0.1.0","apiVersion":1})";
+    R"({"name":"blessing","version":"0.1.0","apiVersion":1})";
 constexpr const char* kNotFound =
     R"({"error":"not_found","message":"Route was not found."})";
 constexpr const char* kMethodNotAllowed =
@@ -327,7 +327,7 @@ void handle_client(int fd, domain::ICheatService& cheat_service) {
     }
     case Route::cheat_toggle: {
       if (!mutation_allowed(headers)) {
-        printf("EZ Cheats: rejected cross-origin or unmarked mutation\n");
+        printf("Blessing: rejected cross-origin or unmarked mutation\n");
         respond_error(fd, 403, "Forbidden", "forbidden_origin",
                       "Mutation requires the embedded frontend origin.");
         break;
@@ -366,7 +366,7 @@ void handle_client(int fd, domain::ICheatService& cheat_service) {
                           : snapshot.error);
         break;
       }
-      printf("EZ Cheats: cheat id=%u enabled=%s\n", id,
+        printf("Blessing: cheat id=%u enabled=%s\n", id,
              updated.enabled ? "true" : "false");
       char response[1024]{};
       JsonWriter json{response, sizeof(response)};
@@ -422,7 +422,7 @@ int HttpServer::run() {
     return 1;
   }
 
-  printf("EZ Cheats listening on port %u\n", port_);
+  printf("Blessing listening on port %u\n", port_);
   for (;;) {
     platform::UniqueFd client{::accept(server.get(), nullptr, nullptr)};
     if (!client) {

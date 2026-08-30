@@ -64,7 +64,7 @@ onBeforeUnmount(() => {
 <template>
   <main class="screen">
     <header class="header">
-      <div><p class="eyebrow">EZ CHEATS</p><h1>Cheats do jogo</h1></div>
+      <div><p class="eyebrow">BLESSING</p><h1>Cheats do jogo</h1></div>
       <div class="connection" :class="{ offline: !state.connected }">
         <span class="status-dot" />
         {{ state.connected ? 'Serviço conectado' : 'Serviço desconectado' }}

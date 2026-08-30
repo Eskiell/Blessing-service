@@ -1,8 +1,8 @@
-# EZ Cheats Frontend
+# Blessing
 
 Interface Vue 3 para listar e alternar cheats do jogo em execução. O build usa
 Vite e gera um único `dist/index.html`, adequado para ser incorporado ao futuro
-payload/daemon do EZ Cheats.
+payload/daemon do Blessing.
 
 O trabalho de migração do motor do OnionHEN está organizado em PRs no
 [`docs/ONIONHEN_MIGRATION_PLAN.md`](docs/ONIONHEN_MIGRATION_PLAN.md).
@@ -28,7 +28,7 @@ export PS5_PAYLOAD_SDK=/caminho/do/ps5-payload-sdk
 make all
 ```
 
-O build gera `ez-cheats.elf` em C++20 e incorpora o HTML produzido pelo Vite.
+O build gera `blessing.elf` em C++20 e incorpora o HTML produzido pelo Vite.
 O SDK atualmente instalado não inclui libc++; por isso, a fundação usa classes
 C++ e RAII sobre a libc do SDK, sem depender da biblioteca-padrão C++. Essa
 fronteira pode ser revista caso libc++ seja adicionada ao toolchain.
