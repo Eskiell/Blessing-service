@@ -34,6 +34,7 @@ JSON e envia apenas a intenção de ativar ou desativar um ID.
 | `src/parsers` | leitura dos quatro formatos de cheats |
 | `src/repository` | descoberta em disco, assinatura e hot reload |
 | `src/platform` | detecção do jogo, processos e módulos |
+| `installer` | manifesto e ícone incorporados do tile da aba Mídia |
 | `src/memory` | backends `mdbg`, `kdirect` e fake |
 | `src/http` | servidor HTTP e respostas JSON |
 | `frontend/src` | interface Vue e cliente da API |
@@ -46,10 +47,18 @@ O ponto de entrada é `src/main.cpp`. Ele:
 1. ignora `SIGPIPE`, evitando que uma desconexão HTTP encerre o payload;
 2. cria `Ps5GamePlatform`;
 3. cria `FileCheatRepository` e garante o diretório configurado;
-4. detecta o firmware e seleciona o backend de memória;
-5. injeta plataforma, repositório e memória em `CheatService`;
-6. entrega o serviço ao `HttpServer`;
-7. entra no loop de conexões.
+4. instala ou atualiza, sem tornar falhas fatais, o tile `EZ Cheats` que abre
+   `http://127.0.0.1:5911/` na aba Mídia;
+5. detecta o firmware e seleciona o backend de memória;
+6. injeta plataforma, repositório e memória em `CheatService`;
+7. entrega o serviço ao `HttpServer`;
+8. entra no loop de conexões.
+
+`ps5_media_tile.cpp` incorpora `installer/param.json` e `installer/icon0.png`,
+compara os bytes com `/user/app/EZCHT0001/sce_sys/` e só registra novamente o
+título por `SceAppInstUtil` quando os arquivos estiverem ausentes ou diferentes.
+O tile é apenas um deep link local: ele permanece após reboot, mas depende do
+ELF em execução para que o servidor responda.
 
 `HTTP_PORT`, `CHEATS_DIRECTORY` e `MEMORY_BACKEND` são opções de build que
 viram macros de compilação. Assim, o runtime não depende de um arquivo externo

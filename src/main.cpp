@@ -6,6 +6,7 @@
 #include "ezcheats/http/http_server.hpp"
 #include "ezcheats/memory/memory_backend_factory.hpp"
 #include "ezcheats/platform/ps5_game_platform.hpp"
+#include "ezcheats/platform/ps5_media_tile.hpp"
 #include "ezcheats/repository/file_cheat_repository.hpp"
 
 #ifndef EZ_CHEATS_HTTP_PORT
@@ -24,6 +25,14 @@ int main() {
            repository.directory());
     return 1;
   }
+  const auto tile_result = ezcheats::platform::install_media_tile_if_needed();
+  const char* tile_status = "failed";
+  if (tile_result == ezcheats::platform::MediaTileResult::installed) {
+    tile_status = "installed";
+  } else if (tile_result == ezcheats::platform::MediaTileResult::current) {
+    tile_status = "current";
+  }
+  printf("EZ Cheats: media tile=%s\n", tile_status);
   constexpr auto requested_backend =
       static_cast<ezcheats::memory::MemoryBackendKind>(
           EZ_CHEATS_MEMORY_BACKEND);
