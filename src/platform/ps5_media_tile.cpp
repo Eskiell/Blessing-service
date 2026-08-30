@@ -102,33 +102,45 @@ int register_title() noexcept {
 }  // namespace
 
 MediaTileResult install_media_tile_if_needed() noexcept {
-  if (file_matches(kParamPath, ez_cheats_media_param,
+  const bool assets_current =
+      file_matches(kParamPath, ez_cheats_media_param,
                    ez_cheats_media_param_size) &&
       file_matches(kIconPath, ez_cheats_media_icon,
-                   ez_cheats_media_icon_size)) {
-    return MediaTileResult::current;
-  }
+                   ez_cheats_media_icon_size);
 
-  sceNetCtlInit();
+  const int netctl_result = sceNetCtlInit();
   int user_priority = 256;
-  sceUserServiceInitialize(&user_priority);
-  if (sceAppInstUtilInitialize() != 0) return MediaTileResult::failed;
+  const int user_result = sceUserServiceInitialize(&user_priority);
+  const int initialize_result = sceAppInstUtilInitialize();
+  printf("EZ Cheats: media tile init netctl=0x%08x user=0x%08x "
+         "appinst=0x%08x\n",
+         static_cast<uint32_t>(netctl_result),
+         static_cast<uint32_t>(user_result),
+         static_cast<uint32_t>(initialize_result));
+  if (initialize_result != 0) return MediaTileResult::failed;
 
-  const bool directories_ready =
-      (::mkdir(kAppDirectory, 0755) == 0 || errno == EEXIST) &&
-      (::mkdir(kSystemDirectory, 0755) == 0 || errno == EEXIST);
-  if (!directories_ready ||
-      !write_file(kParamPath, ez_cheats_media_param,
-                  ez_cheats_media_param_size) ||
-      !write_file(kIconPath, ez_cheats_media_icon,
-                  ez_cheats_media_icon_size)) {
-    sceAppInstUtilTerminate();
-    return MediaTileResult::failed;
+  if (!assets_current) {
+    const bool directories_ready =
+        (::mkdir(kAppDirectory, 0755) == 0 || errno == EEXIST) &&
+        (::mkdir(kSystemDirectory, 0755) == 0 || errno == EEXIST);
+    if (!directories_ready ||
+        !write_file(kParamPath, ez_cheats_media_param,
+                    ez_cheats_media_param_size) ||
+        !write_file(kIconPath, ez_cheats_media_icon,
+                    ez_cheats_media_icon_size)) {
+      printf("EZ Cheats: media tile asset update failed errno=%d\n", errno);
+      sceAppInstUtilTerminate();
+      return MediaTileResult::failed;
+    }
   }
 
   const int result = register_title();
+  printf("EZ Cheats: media tile register title=%s result=0x%08x\n", kTitleId,
+         static_cast<uint32_t>(result));
   sceAppInstUtilTerminate();
-  return result == 0 ? MediaTileResult::installed : MediaTileResult::failed;
+  if (result != 0) return MediaTileResult::failed;
+  return assets_current ? MediaTileResult::current
+                        : MediaTileResult::installed;
 }
 
 }  // namespace ezcheats::platform

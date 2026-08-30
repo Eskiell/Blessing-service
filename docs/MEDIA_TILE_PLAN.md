@@ -17,6 +17,10 @@ Instalar ou atualizar, ao executar `ez-cheats.elf`, um tile persistente chamado
 - [x] Atualizar arquitetura, operação, checklist e atribuições.
 - [ ] Validar instalação, abertura offline, atualização e persistência no PS5.
 
+> O primeiro teste do PR 16 gravou os assets, mas não exibiu o tile. A repetição
+> segura do registro e os diagnósticos necessários são tratados pelo PR 17 em
+> `MEDIA_TILE_REGISTRATION_FIX_PLAN.md`.
+
 ## Critérios de aceite
 
 - O tile aparece uma única vez na aba Mídia com nome e ícone corretos.

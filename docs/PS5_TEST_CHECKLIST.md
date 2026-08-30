@@ -18,6 +18,8 @@ suportado.
 - [ ] Após reiniciar, o tile permanece e volta a funcionar quando o ELF é
   executado novamente.
 - [ ] Falha induzida no instalador do tile não impede o backend de iniciar.
+- [ ] Assets já presentes não impedem uma nova tentativa de registrar o tile.
+- [ ] O log mostra os códigos de inicialização e registro do Title ID.
 
 ## Jogo e arquivos
 
