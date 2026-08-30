@@ -34,11 +34,11 @@ InMemoryCheatService::InMemoryCheatService() noexcept {
   copy_text(game_.process_name, sizeof(game_.process_name), "eboot.bin");
 
   initialize_cheat(cheats_[0], 0, "Vida infinita",
-                   "Mantém a vida do personagem no valor máximo", "EZ Cheats");
+                   "Mantém a vida do personagem no valor máximo", "Blessing");
   initialize_cheat(cheats_[1], 1, "Munição infinita",
-                   "Impede que a munição seja consumida", "EZ Cheats");
+                   "Impede que a munição seja consumida", "Blessing");
   initialize_cheat(cheats_[2], 2, "Multiplicador de experiência",
-                   "Aumenta a experiência recebida", "EZ Cheats");
+                   "Aumenta a experiência recebida", "Blessing");
 }
 
 bool InMemoryCheatService::snapshot(domain::ServiceSnapshot& output) const {

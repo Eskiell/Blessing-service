@@ -11,7 +11,7 @@ suportado.
 - [ ] O payload inicia e cria o diretório de cheats quando ausente.
 - [ ] `/health` e `/api/v1/version` respondem com `Cache-Control: no-store`.
 - [ ] O frontend abre pelo IP e porta configurados.
-- [ ] A primeira execução instala `EZ Cheats` na aba Mídia.
+- [ ] A primeira execução instala `Blessing` na aba Mídia.
 - [ ] O tile abre `http://127.0.0.1:5911/` com a internet desativada.
 - [ ] Uma segunda execução não cria tile duplicado.
 - [ ] Uma build com assets alterados atualiza o tile existente.
@@ -20,7 +20,7 @@ suportado.
 - [ ] Falha induzida no instalador do tile não impede o backend de iniciar.
 - [ ] Assets já presentes não impedem uma nova tentativa de registrar o tile.
 - [ ] O log mostra os códigos de inicialização e registro do Title ID.
-- [ ] Uma notificação `EZ Cheats - tile OK` aparece quando o registro funciona.
+- [ ] Uma notificação `Blessing - tile OK` aparece quando o registro funciona.
 - [ ] Uma falha mostra na tela a etapa e o código hexadecimal correspondente.
 
 ## Jogo e arquivos

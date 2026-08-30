@@ -24,7 +24,7 @@ else
 $(error PS5_PAYLOAD_SDK is undefined. Export PS5_PAYLOAD_SDK=/path/to/ps5-payload-sdk)
 endif
 
-ELF := ez-cheats.elf
+ELF := blessing.elf
 FRONTEND_DIR := frontend
 FRONTEND_ASSET := $(FRONTEND_DIR)/dist/index.html
 FRONTEND_MARKER := $(FRONTEND_DIR)/node_modules/.package-lock.json
@@ -199,5 +199,5 @@ deploy: $(ELF)
 
 clean:
 	rm -rf build
-	rm -f $(ELF)
+	rm -f $(ELF) ez-cheats.elf
 	rm -rf $(FRONTEND_DIR)/dist

@@ -2,7 +2,7 @@
 
 | Componente | Origem | Uso | Licença |
 | --- | --- | --- | --- |
-| EZ Cheats | este repositório | payload, serviço HTTP e frontend | GPL-3.0 |
+| Blessing | este repositório | payload, serviço HTTP e frontend | GPL-3.0 |
 | OnionHEN cheat engine | Eskiell/onionHEN | parsers, repositório, plataforma, memória e aplicador adaptados | GPL-3.0 |
 | tiny-AES/AES vendorizado | revisão OnionHEN registrada | descriptografia MC4 | GPL-3.0 no conjunto distribuído |
 | Base64 | fonte vendorizada em `third_party/mc4` | decodificação MC4 | BSD, aviso no fonte |

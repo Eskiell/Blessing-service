@@ -1,6 +1,6 @@
-# Como o EZ Cheats funciona
+# Como o Blessing funciona
 
-Este guia explica o código atual do EZ Cheats sem exigir conhecimento prévio do
+Este guia explica o código atual do Blessing sem exigir conhecimento prévio do
 OnionHEN. O projeto é um payload C++20 para PS5 com um frontend Vue incorporado
 no próprio ELF.
 
@@ -47,7 +47,7 @@ O ponto de entrada é `src/main.cpp`. Ele:
 1. ignora `SIGPIPE`, evitando que uma desconexão HTTP encerre o payload;
 2. cria `Ps5GamePlatform`;
 3. cria `FileCheatRepository` e garante o diretório configurado;
-4. instala ou atualiza, sem tornar falhas fatais, o tile `EZ Cheats` que abre
+4. instala ou atualiza, sem tornar falhas fatais, o tile `Blessing` que abre
    `http://127.0.0.1:5911/` na aba Mídia;
 5. detecta o firmware e seleciona o backend de memória;
 6. injeta plataforma, repositório e memória em `CheatService`;

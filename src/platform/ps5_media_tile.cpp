@@ -143,13 +143,13 @@ MediaTileResult install_media_tile_if_needed() noexcept {
   int user_priority = 256;
   const int user_result = sceUserServiceInitialize(&user_priority);
   const int initialize_result = sceAppInstUtilInitialize();
-  printf("EZ Cheats: media tile init netctl=0x%08x user=0x%08x "
+  printf("Blessing: media tile init netctl=0x%08x user=0x%08x "
          "appinst=0x%08x\n",
          static_cast<uint32_t>(netctl_result),
          static_cast<uint32_t>(user_result),
          static_cast<uint32_t>(initialize_result));
   if (initialize_result != 0) {
-    notify_tile("EZ Cheats - tile FALHOU\nAppInstUtil: 0x%08x",
+    notify_tile("Blessing - tile FALHOU\nAppInstUtil: 0x%08x",
                 static_cast<uint32_t>(initialize_result));
     return MediaTileResult::failed;
   }
@@ -163,23 +163,23 @@ MediaTileResult install_media_tile_if_needed() noexcept {
                     ez_cheats_media_param_size) ||
         !write_file(kIconPath, ez_cheats_media_icon,
                     ez_cheats_media_icon_size)) {
-      printf("EZ Cheats: media tile asset update failed errno=%d\n", errno);
-      notify_tile("EZ Cheats - tile FALHOU\nAssets: errno %d", errno);
+      printf("Blessing: media tile asset update failed errno=%d\n", errno);
+      notify_tile("Blessing - tile FALHOU\nAssets: errno %d", errno);
       sceAppInstUtilTerminate();
       return MediaTileResult::failed;
     }
   }
 
   const int result = register_title();
-  printf("EZ Cheats: media tile register title=%s result=0x%08x\n", kTitleId,
+  printf("Blessing: media tile register title=%s result=0x%08x\n", kTitleId,
          static_cast<uint32_t>(result));
   sceAppInstUtilTerminate();
   if (result != 0) {
-    notify_tile("EZ Cheats - tile FALHOU\nRegistro: 0x%08x",
+    notify_tile("Blessing - tile FALHOU\nRegistro: 0x%08x",
                 static_cast<uint32_t>(result));
     return MediaTileResult::failed;
   }
-  notify_tile("EZ Cheats - tile OK\nMidia: EZCH00001\nhttp://127.0.0.1:5911/");
+  notify_tile("Blessing - tile OK\nMidia: EZCH00001\nhttp://127.0.0.1:5911/");
   return assets_current ? MediaTileResult::current
                         : MediaTileResult::installed;
 }

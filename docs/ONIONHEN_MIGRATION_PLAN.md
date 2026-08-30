@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Trazer o recurso de cheats do OnionHEN para o EZ Cheats como um payload/serviço
+Trazer o recurso de cheats do OnionHEN para o Blessing como um payload/serviço
 independente, escrito principalmente em C++20, com frontend Vue incorporado e
 sem carregar ShellUI, Toolbox, FTP, payload manager ou demais recursos do
 OnionHEN.

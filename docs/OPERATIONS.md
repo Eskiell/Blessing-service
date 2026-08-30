@@ -16,7 +16,7 @@ make host-test
 make all
 ```
 
-O build produz `ez-cheats.elf` e incorpora `frontend/dist/index.html`, o
+O build produz `blessing.elf` e incorpora `frontend/dist/index.html`, o
 manifesto e o ícone do tile da aba Mídia. As opções operacionais são definidas
 no build:
 
@@ -44,7 +44,7 @@ na aba Mídia precisa sempre apontar para a mesma porta.
 1. Copie os cheats para o diretório configurado usando o nome
    `<TITLE_ID>_<VERSION>.<formato>`.
 2. Envie e execute o ELF pelo carregador de payload usado no console.
-3. Na primeira execução, aguarde a instalação do tile **EZ Cheats** na aba
+3. Na primeira execução, aguarde a instalação do tile **Blessing** na aba
    **Mídia**.
 4. Abra o tile, que acessa `http://127.0.0.1:5911/` sem depender de internet ou
    de outro dispositivo. Como alternativa, abra

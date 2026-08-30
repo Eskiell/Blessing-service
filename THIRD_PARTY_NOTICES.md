@@ -10,7 +10,7 @@ The Media-category tile installation flow in
   `engine/app_config.hpp`, and `installer/param.json`
 - License: GNU General Public License, version 3
 
-The EZ Cheats adaptation uses its own title ID, manifest, original angel icon,
+The Blessing adaptation uses its own title ID, manifest, original angel icon,
 namespace, paths and non-fatal startup integration. No torrent functionality or
 runtime dependency was imported.
 
@@ -46,8 +46,8 @@ code, and the JSON fixture were adapted from OnionHEN:
   - `source/util/tests/fixtures/cheats/Assassins-Creed-Mirage_PPSA07230_01.012.000_Aigars_Uze.ShnExt`
 - License: GNU General Public License, version 3
 
-The EZ Cheats adaptation replaces OnionHEN-specific logging, paths and utility
-dependencies, uses the EZ Cheats domain model, adds explicit ownership and
+The Blessing adaptation replaces OnionHEN-specific logging, paths and utility
+dependencies, uses the Blessing domain model, adds explicit ownership and
 bounded parsing, and rejects unregistered formats.
 
 The Base64 implementation carries its original copyright notice and BSD

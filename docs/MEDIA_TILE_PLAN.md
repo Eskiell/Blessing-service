@@ -2,8 +2,8 @@
 
 ## Objetivo
 
-Instalar ou atualizar, ao executar `ez-cheats.elf`, um tile persistente chamado
-**EZ Cheats** na aba Mídia. O tile abre o frontend incorporado por
+Instalar ou atualizar, ao executar `blessing.elf`, um tile persistente chamado
+**Blessing** na aba Mídia. O tile abre o frontend incorporado por
 `http://127.0.0.1:5911/`, sem internet e sem outro dispositivo na rede.
 
 ## Escopo
