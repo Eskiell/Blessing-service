@@ -20,6 +20,8 @@ suportado.
 - [ ] Falha induzida no instalador do tile não impede o backend de iniciar.
 - [ ] Assets já presentes não impedem uma nova tentativa de registrar o tile.
 - [ ] O log mostra os códigos de inicialização e registro do Title ID.
+- [ ] Uma notificação `EZ Cheats - tile OK` aparece quando o registro funciona.
+- [ ] Uma falha mostra na tela a etapa e o código hexadecimal correspondente.
 
 ## Jogo e arquivos
 

@@ -2,6 +2,7 @@
 
 #include <errno.h>
 #include <stddef.h>
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,6 +52,25 @@ constexpr char kAppDirectory[] = "/user/app/EZCHT0001";
 constexpr char kSystemDirectory[] = "/user/app/EZCHT0001/sce_sys";
 constexpr char kParamPath[] = "/user/app/EZCHT0001/sce_sys/param.json";
 constexpr char kIconPath[] = "/user/app/EZCHT0001/sce_sys/icon0.png";
+
+struct NotificationRequest {
+  char reserved[45];
+  char message[3075];
+};
+
+static_assert(sizeof(NotificationRequest) == 0xc30);
+
+extern "C" int sceKernelSendNotificationRequest(int, NotificationRequest*,
+                                                 size_t, int);
+
+void notify_tile(const char* format, ...) noexcept {
+  NotificationRequest request{};
+  va_list arguments;
+  va_start(arguments, format);
+  ::vsnprintf(request.message, sizeof(request.message), format, arguments);
+  va_end(arguments);
+  sceKernelSendNotificationRequest(0, &request, sizeof(request), 0);
+}
 
 bool file_matches(const char* path, const uint8_t* expected,
                   size_t expected_size) noexcept {
@@ -117,7 +137,11 @@ MediaTileResult install_media_tile_if_needed() noexcept {
          static_cast<uint32_t>(netctl_result),
          static_cast<uint32_t>(user_result),
          static_cast<uint32_t>(initialize_result));
-  if (initialize_result != 0) return MediaTileResult::failed;
+  if (initialize_result != 0) {
+    notify_tile("EZ Cheats - tile FALHOU\nAppInstUtil: 0x%08x",
+                static_cast<uint32_t>(initialize_result));
+    return MediaTileResult::failed;
+  }
 
   if (!assets_current) {
     const bool directories_ready =
@@ -129,6 +153,7 @@ MediaTileResult install_media_tile_if_needed() noexcept {
         !write_file(kIconPath, ez_cheats_media_icon,
                     ez_cheats_media_icon_size)) {
       printf("EZ Cheats: media tile asset update failed errno=%d\n", errno);
+      notify_tile("EZ Cheats - tile FALHOU\nAssets: errno %d", errno);
       sceAppInstUtilTerminate();
       return MediaTileResult::failed;
     }
@@ -138,7 +163,12 @@ MediaTileResult install_media_tile_if_needed() noexcept {
   printf("EZ Cheats: media tile register title=%s result=0x%08x\n", kTitleId,
          static_cast<uint32_t>(result));
   sceAppInstUtilTerminate();
-  if (result != 0) return MediaTileResult::failed;
+  if (result != 0) {
+    notify_tile("EZ Cheats - tile FALHOU\nRegistro: 0x%08x",
+                static_cast<uint32_t>(result));
+    return MediaTileResult::failed;
+  }
+  notify_tile("EZ Cheats - tile OK\nMidia: EZCHT0001\nhttp://127.0.0.1:5911/");
   return assets_current ? MediaTileResult::current
                         : MediaTileResult::installed;
 }

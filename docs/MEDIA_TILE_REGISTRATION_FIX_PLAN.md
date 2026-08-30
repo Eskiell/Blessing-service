@@ -14,6 +14,7 @@ na aba Mídia.
 - [x] Tentar registrar `EZCHT0001` em toda execução do ELF.
 - [x] Não regravar `param.json` e `icon0.png` quando estiverem iguais.
 - [x] Registrar os resultados de inicialização e instalação no console.
+- [x] Mostrar uma notificação nativa no PS5 com sucesso ou código da falha.
 - [x] Manter qualquer falha do tile não fatal para o serviço de cheats.
 - [ ] Confirmar no PS5 que o tile aparece após executar o ELF corrigido.
 
@@ -22,6 +23,7 @@ na aba Mídia.
 - Assets existentes não impedem uma nova tentativa de registro.
 - O log informa os códigos retornados por NetCtl, UserService, AppInstUtil e
   pelo registro do título.
+- A tela do PS5 mostra `tile OK` ou a etapa e o código que falharam.
 - O frontend e o motor de cheats continuam iniciando se o registro falhar.
 - Os testes de host e o build completo do ELF passam.
 
