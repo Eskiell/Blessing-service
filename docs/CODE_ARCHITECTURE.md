@@ -55,7 +55,7 @@ O ponto de entrada é `src/main.cpp`. Ele:
 8. entra no loop de conexões.
 
 `ps5_media_tile.cpp` incorpora `installer/param.json` e `installer/icon0.png`,
-compara os bytes com `/user/app/EZCHT0001/sce_sys/` e só registra novamente o
+compara os bytes com `/user/app/EZCH00001/sce_sys/` e só registra novamente o
 título por `SceAppInstUtil` quando os arquivos estiverem ausentes ou diferentes.
 O tile é apenas um deep link local: ele permanece após reboot, mas depende do
 ELF em execução para que o servidor responda.

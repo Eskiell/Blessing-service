@@ -8,7 +8,7 @@ Instalar ou atualizar, ao executar `ez-cheats.elf`, um tile persistente chamado
 
 ## Escopo
 
-- [x] Incorporar um manifesto com Title ID `EZCHT0001` e deep link local.
+- [x] Incorporar um manifesto com Title ID válido `EZCH00001` e deep link local.
 - [x] Incorporar um ícone original de anjo em PNG 512×512.
 - [x] Comparar os assets instalados e evitar reinstalações desnecessárias.
 - [x] Registrar o título por `SceAppInstUtil`, com fallback compatível.

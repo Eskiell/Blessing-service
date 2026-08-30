@@ -47,11 +47,22 @@ int sceAppInstUtilAppInstallAll(void*);
 namespace ezcheats::platform {
 namespace {
 
-constexpr char kTitleId[] = "EZCHT0001";
-constexpr char kAppDirectory[] = "/user/app/EZCHT0001";
-constexpr char kSystemDirectory[] = "/user/app/EZCHT0001/sce_sys";
-constexpr char kParamPath[] = "/user/app/EZCHT0001/sce_sys/param.json";
-constexpr char kIconPath[] = "/user/app/EZCHT0001/sce_sys/icon0.png";
+constexpr char kTitleId[] = "EZCH00001";
+constexpr char kAppDirectory[] = "/user/app/EZCH00001";
+constexpr char kSystemDirectory[] = "/user/app/EZCH00001/sce_sys";
+constexpr char kParamPath[] = "/user/app/EZCH00001/sce_sys/param.json";
+constexpr char kIconPath[] = "/user/app/EZCH00001/sce_sys/icon0.png";
+
+static_assert(sizeof(kTitleId) == 10);
+static_assert(kTitleId[0] >= 'A' && kTitleId[0] <= 'Z' &&
+              kTitleId[1] >= 'A' && kTitleId[1] <= 'Z' &&
+              kTitleId[2] >= 'A' && kTitleId[2] <= 'Z' &&
+              kTitleId[3] >= 'A' && kTitleId[3] <= 'Z' &&
+              kTitleId[4] >= '0' && kTitleId[4] <= '9' &&
+              kTitleId[5] >= '0' && kTitleId[5] <= '9' &&
+              kTitleId[6] >= '0' && kTitleId[6] <= '9' &&
+              kTitleId[7] >= '0' && kTitleId[7] <= '9' &&
+              kTitleId[8] >= '0' && kTitleId[8] <= '9');
 
 struct NotificationRequest {
   char reserved[45];
@@ -168,7 +179,7 @@ MediaTileResult install_media_tile_if_needed() noexcept {
                 static_cast<uint32_t>(result));
     return MediaTileResult::failed;
   }
-  notify_tile("EZ Cheats - tile OK\nMidia: EZCHT0001\nhttp://127.0.0.1:5911/");
+  notify_tile("EZ Cheats - tile OK\nMidia: EZCH00001\nhttp://127.0.0.1:5911/");
   return assets_current ? MediaTileResult::current
                         : MediaTileResult::installed;
 }

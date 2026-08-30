@@ -8,13 +8,19 @@ chamada de registro falhasse depois da escrita, execuções seguintes retornavam
 antes de chamar `SceAppInstUtil`; os arquivos existiam, mas nenhum tile aparecia
 na aba Mídia.
 
+O teste seguinte confirmou retorno zero do registro, mas a Home UI ainda
+ignorou `EZCHT0001`: ele usava cinco letras e quatro números. O Title ID foi
+corrigido para `EZCH00001`, seguindo o formato de quatro letras e cinco números
+usado pelo projeto funcional de referência.
+
 ## Escopo
 
 - [x] Separar a atualização dos assets do registro do Title ID.
-- [x] Tentar registrar `EZCHT0001` em toda execução do ELF.
+- [x] Corrigir e tentar registrar `EZCH00001` em toda execução do ELF.
 - [x] Não regravar `param.json` e `icon0.png` quando estiverem iguais.
 - [x] Registrar os resultados de inicialização e instalação no console.
 - [x] Mostrar uma notificação nativa no PS5 com sucesso ou código da falha.
+- [x] Validar no build o comprimento e o formato alfanumérico do Title ID.
 - [x] Manter qualquer falha do tile não fatal para o serviço de cheats.
 - [ ] Confirmar no PS5 que o tile aparece após executar o ELF corrigido.
 

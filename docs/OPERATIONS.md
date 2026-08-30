@@ -51,11 +51,11 @@ na aba Mídia precisa sempre apontar para a mesma porta.
    `http://<IP-DO-PS5>:<HTTP_PORT>/` em um dispositivo da mesma rede.
 5. Inicie o jogo e confira Title ID e versão antes de ativar qualquer cheat.
 
-O tile `EZCHT0001` é persistente e seus assets ficam em
-`/user/app/EZCHT0001/sce_sys/`. O payload compara esses arquivos com as cópias
+O tile `EZCH00001` é persistente e seus assets ficam em
+`/user/app/EZCH00001/sce_sys/`. O payload compara esses arquivos com as cópias
 incorporadas e os atualiza quando necessário. Depois de reiniciar o PS5, o tile
 continua visível, mas o ELF precisa ser executado novamente antes de abri-lo.
-Para remover o tile manualmente, apague `/user/app/EZCHT0001` e remova a entrada
+Para remover o tile manualmente, apague `/user/app/EZCH00001` e remova a entrada
 do aplicativo usando a ferramenta de gerenciamento instalada no console.
 
 O payload escuta em todas as interfaces. Use-o somente em uma rede local
