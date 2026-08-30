@@ -8,7 +8,7 @@ Instalar ou atualizar, ao executar `ez-cheats.elf`, um tile persistente chamado
 
 ## Escopo
 
-- [x] Incorporar um manifesto com Title ID `EZCHT0001` e deep link local.
+- [x] Incorporar um manifesto com Title ID válido `EZCH00001` e deep link local.
 - [x] Incorporar um ícone original de anjo em PNG 512×512.
 - [x] Comparar os assets instalados e evitar reinstalações desnecessárias.
 - [x] Registrar o título por `SceAppInstUtil`, com fallback compatível.
@@ -16,6 +16,10 @@ Instalar ou atualizar, ao executar `ez-cheats.elf`, um tile persistente chamado
 - [x] Fixar a porta 5911 para manter o deep link consistente.
 - [x] Atualizar arquitetura, operação, checklist e atribuições.
 - [ ] Validar instalação, abertura offline, atualização e persistência no PS5.
+
+> O primeiro teste do PR 16 gravou os assets, mas não exibiu o tile. A repetição
+> segura do registro e os diagnósticos necessários são tratados pelo PR 17 em
+> `MEDIA_TILE_REGISTRATION_FIX_PLAN.md`.
 
 ## Critérios de aceite
 

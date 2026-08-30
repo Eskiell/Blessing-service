@@ -2,6 +2,7 @@
 
 #include <errno.h>
 #include <stddef.h>
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,11 +47,41 @@ int sceAppInstUtilAppInstallAll(void*);
 namespace ezcheats::platform {
 namespace {
 
-constexpr char kTitleId[] = "EZCHT0001";
-constexpr char kAppDirectory[] = "/user/app/EZCHT0001";
-constexpr char kSystemDirectory[] = "/user/app/EZCHT0001/sce_sys";
-constexpr char kParamPath[] = "/user/app/EZCHT0001/sce_sys/param.json";
-constexpr char kIconPath[] = "/user/app/EZCHT0001/sce_sys/icon0.png";
+constexpr char kTitleId[] = "EZCH00001";
+constexpr char kAppDirectory[] = "/user/app/EZCH00001";
+constexpr char kSystemDirectory[] = "/user/app/EZCH00001/sce_sys";
+constexpr char kParamPath[] = "/user/app/EZCH00001/sce_sys/param.json";
+constexpr char kIconPath[] = "/user/app/EZCH00001/sce_sys/icon0.png";
+
+static_assert(sizeof(kTitleId) == 10);
+static_assert(kTitleId[0] >= 'A' && kTitleId[0] <= 'Z' &&
+              kTitleId[1] >= 'A' && kTitleId[1] <= 'Z' &&
+              kTitleId[2] >= 'A' && kTitleId[2] <= 'Z' &&
+              kTitleId[3] >= 'A' && kTitleId[3] <= 'Z' &&
+              kTitleId[4] >= '0' && kTitleId[4] <= '9' &&
+              kTitleId[5] >= '0' && kTitleId[5] <= '9' &&
+              kTitleId[6] >= '0' && kTitleId[6] <= '9' &&
+              kTitleId[7] >= '0' && kTitleId[7] <= '9' &&
+              kTitleId[8] >= '0' && kTitleId[8] <= '9');
+
+struct NotificationRequest {
+  char reserved[45];
+  char message[3075];
+};
+
+static_assert(sizeof(NotificationRequest) == 0xc30);
+
+extern "C" int sceKernelSendNotificationRequest(int, NotificationRequest*,
+                                                 size_t, int);
+
+void notify_tile(const char* format, ...) noexcept {
+  NotificationRequest request{};
+  va_list arguments;
+  va_start(arguments, format);
+  ::vsnprintf(request.message, sizeof(request.message), format, arguments);
+  va_end(arguments);
+  sceKernelSendNotificationRequest(0, &request, sizeof(request), 0);
+}
 
 bool file_matches(const char* path, const uint8_t* expected,
                   size_t expected_size) noexcept {
@@ -102,33 +133,55 @@ int register_title() noexcept {
 }  // namespace
 
 MediaTileResult install_media_tile_if_needed() noexcept {
-  if (file_matches(kParamPath, ez_cheats_media_param,
+  const bool assets_current =
+      file_matches(kParamPath, ez_cheats_media_param,
                    ez_cheats_media_param_size) &&
       file_matches(kIconPath, ez_cheats_media_icon,
-                   ez_cheats_media_icon_size)) {
-    return MediaTileResult::current;
-  }
+                   ez_cheats_media_icon_size);
 
-  sceNetCtlInit();
+  const int netctl_result = sceNetCtlInit();
   int user_priority = 256;
-  sceUserServiceInitialize(&user_priority);
-  if (sceAppInstUtilInitialize() != 0) return MediaTileResult::failed;
-
-  const bool directories_ready =
-      (::mkdir(kAppDirectory, 0755) == 0 || errno == EEXIST) &&
-      (::mkdir(kSystemDirectory, 0755) == 0 || errno == EEXIST);
-  if (!directories_ready ||
-      !write_file(kParamPath, ez_cheats_media_param,
-                  ez_cheats_media_param_size) ||
-      !write_file(kIconPath, ez_cheats_media_icon,
-                  ez_cheats_media_icon_size)) {
-    sceAppInstUtilTerminate();
+  const int user_result = sceUserServiceInitialize(&user_priority);
+  const int initialize_result = sceAppInstUtilInitialize();
+  printf("EZ Cheats: media tile init netctl=0x%08x user=0x%08x "
+         "appinst=0x%08x\n",
+         static_cast<uint32_t>(netctl_result),
+         static_cast<uint32_t>(user_result),
+         static_cast<uint32_t>(initialize_result));
+  if (initialize_result != 0) {
+    notify_tile("EZ Cheats - tile FALHOU\nAppInstUtil: 0x%08x",
+                static_cast<uint32_t>(initialize_result));
     return MediaTileResult::failed;
   }
 
+  if (!assets_current) {
+    const bool directories_ready =
+        (::mkdir(kAppDirectory, 0755) == 0 || errno == EEXIST) &&
+        (::mkdir(kSystemDirectory, 0755) == 0 || errno == EEXIST);
+    if (!directories_ready ||
+        !write_file(kParamPath, ez_cheats_media_param,
+                    ez_cheats_media_param_size) ||
+        !write_file(kIconPath, ez_cheats_media_icon,
+                    ez_cheats_media_icon_size)) {
+      printf("EZ Cheats: media tile asset update failed errno=%d\n", errno);
+      notify_tile("EZ Cheats - tile FALHOU\nAssets: errno %d", errno);
+      sceAppInstUtilTerminate();
+      return MediaTileResult::failed;
+    }
+  }
+
   const int result = register_title();
+  printf("EZ Cheats: media tile register title=%s result=0x%08x\n", kTitleId,
+         static_cast<uint32_t>(result));
   sceAppInstUtilTerminate();
-  return result == 0 ? MediaTileResult::installed : MediaTileResult::failed;
+  if (result != 0) {
+    notify_tile("EZ Cheats - tile FALHOU\nRegistro: 0x%08x",
+                static_cast<uint32_t>(result));
+    return MediaTileResult::failed;
+  }
+  notify_tile("EZ Cheats - tile OK\nMidia: EZCH00001\nhttp://127.0.0.1:5911/");
+  return assets_current ? MediaTileResult::current
+                        : MediaTileResult::installed;
 }
 
 }  // namespace ezcheats::platform
