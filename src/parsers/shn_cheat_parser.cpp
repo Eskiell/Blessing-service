@@ -20,6 +20,33 @@ const char* find_bounded(const char* start, const char* end,
   return nullptr;
 }
 
+void unescape_xml(char* text) noexcept {
+  if (text == nullptr) return;
+  struct Entity {
+    const char* encoded;
+    size_t size;
+    char decoded;
+  };
+  constexpr Entity entities[] = {{"&quot;", 6, '"'}, {"&apos;", 6, '\''},
+                                 {"&amp;", 5, '&'},  {"&lt;", 4, '<'},
+                                 {"&gt;", 4, '>'}};
+  char* read = text;
+  char* write = text;
+  while (*read != '\0') {
+    bool decoded = false;
+    for (const auto& entity : entities) {
+      if (strncmp(read, entity.encoded, entity.size) == 0) {
+        *write++ = entity.decoded;
+        read += entity.size;
+        decoded = true;
+        break;
+      }
+    }
+    if (!decoded) *write++ = *read++;
+  }
+  *write = '\0';
+}
+
 bool extract_attribute(const char* element, const char* element_end,
                        const char* attribute, char* output,
                        size_t capacity) noexcept {
@@ -47,6 +74,7 @@ bool extract_attribute(const char* element, const char* element_end,
   if (length >= capacity) length = capacity - 1;
   memcpy(output, value, length);
   output[length] = '\0';
+  unescape_xml(output);
   return true;
 }
 
@@ -70,6 +98,7 @@ bool extract_tag(const char* start, const char* end, const char* tag,
   if (length >= capacity) length = capacity - 1;
   memcpy(output, value, length);
   output[length] = '\0';
+  unescape_xml(output);
   return true;
 }
 
@@ -134,10 +163,12 @@ bool parse_patch(const char* start, const char* end,
 
 bool parse_xml(char* xml, size_t size, domain::CheatFile& output) noexcept {
   domain::clear_cheat_file(output);
-  replace_all(xml, size, "&lt;", "<");
-  replace_all(xml, size, "&gt;", ">");
-  replace_all(xml, size, "\\&quot;", "\"");
-  replace_all(xml, size, "&quot;", "\"");
+  if (find_bounded(xml, xml + size, "<Trainer") == nullptr) {
+    replace_all(xml, size, "&lt;", "<");
+    replace_all(xml, size, "&gt;", ">");
+    replace_all(xml, size, "\\&quot;", "\"");
+    replace_all(xml, size, "&quot;", "\"");
+  }
   const char* end = xml + size;
 
   const char* trainer = find_bounded(xml, end, "<Trainer");

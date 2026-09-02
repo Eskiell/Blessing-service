@@ -53,6 +53,25 @@ void handles_entities_and_section_bounds() {
   assert(patch.enable_size == 1 && patch.enable[0] == 0x0a);
 }
 
+void decodes_named_entities_in_metadata() {
+  constexpr const char* xml =
+      "<Trainer Process=\"eboot.bin\" Game=\"Ratchet &amp; Clank\" "
+      "Moder=\"Alice &amp; Bob\">"
+      "<Cheat Text=\"Health &amp; Ammo\" "
+      "Description=\"A &lt; B &gt; &quot;q&quot; &apos;s &amp; Z &nbsp;\">"
+      "<Cheatline><Offset>10</Offset><ValueOn>AA</ValueOn>"
+      "<ValueOff>BB</ValueOff></Cheatline></Cheat></Trainer>";
+  ezcheats::domain::OwnedCheatFile owned;
+  assert(ezcheats::parsers::CheatParserFactory::load_buffer(
+      "shn", reinterpret_cast<const uint8_t*>(xml), strlen(xml), owned.get()));
+  const auto& file = owned.get();
+  assert(strcmp(file.name, "Ratchet & Clank") == 0);
+  assert(file.author_count == 1);
+  assert(strcmp(file.authors[0], "Alice & Bob") == 0);
+  assert(strcmp(file.cheats[0].name, "Health & Ammo") == 0);
+  assert(strcmp(file.cheats[0].description, "A < B > \"q\" 's & Z &nbsp;") == 0);
+}
+
 void rejects_malformed_input() {
   constexpr const char* malformed =
       "<Trainer Process=\"eboot.bin\" Game=\"Demo\"><Cheat Text=\"Bad\">"
@@ -84,6 +103,7 @@ void loads_real_fixture() {
 int main() {
   parses_buffer();
   handles_entities_and_section_bounds();
+  decodes_named_entities_in_metadata();
   rejects_malformed_input();
   loads_real_fixture();
 }
