@@ -24,8 +24,10 @@ available as a fallback.
 
 - ShellUI code renders UI and translates controller input only.
 - The overlay never writes game memory directly.
-- Controller input is consumed only while the overlay is visible.
-- No polling is performed while the overlay is closed.
+- The global shortcut is observed without consuming controller input.
+- While the overlay is closed, only the shortcut is polled at a bounded rate.
+- Navigation input may be consumed only while the future interactive overlay is
+  visible.
 - Unsupported firmware must fail closed without affecting the HTTP service.
 - Hooks must be removed before unloading or replacing the injected module.
 
@@ -33,7 +35,7 @@ available as a fallback.
 
 - [x] PR 22: add the transport contract and testable overlay session model.
 - [x] PR 23: embed and safely inject an inert overlay ELF into `SceShellUI`.
-- [ ] PR 24: add the controller shortcut and a non-interactive test panel.
+- [x] PR 24: add the controller shortcut and a non-interactive test panel.
 - [ ] PR 25: render the cheat list and connect toggles to `CheatService`.
 - [ ] PR 26: harden firmware profiles, rest-mode reinjection and performance.
 
@@ -54,3 +56,28 @@ Blessing overlay: injection=ready pid=<pid>
 
 Missing ShellUI, invalid embedded ELF, ptrace failures and readiness timeouts
 are non-fatal. In every failure path the existing Media tile remains available.
+
+### PR 24 shortcut probe
+
+PR 24 observes the foreground user's controller at approximately 30 Hz. Holding
+L3+R3 for one second toggles a native system notification card that acts as the
+non-interactive test panel. The shortcut is armed again only after both buttons
+are released, so one hold produces one transition.
+
+This probe does not consume controller input, install PUI hooks, call the HTTP
+API or change cheat state. The game may therefore also react to L3/R3. The
+custom navigable panel and input ownership remain scoped to PR 25.
+
+Once a controller handle is available, the module writes the ShellUI PID to
+`/system_tmp/blessing/overlay-input-ready`. Expected debug output is:
+
+```text
+Blessing overlay: pad user=<user-id> handle=0x<handle>
+Blessing overlay: input ready; hold L3+R3 for 1 second
+Blessing overlay: test panel=open notify=0x0
+Blessing overlay: test panel=closed notify=0x0
+```
+
+If controller reads repeatedly fail, the marker is removed and the module
+reacquires the foreground controller without affecting the Media tile or cheat
+service.

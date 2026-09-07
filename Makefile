@@ -26,6 +26,7 @@ endif
 
 ELF := blessing.elf
 OVERLAY_ELF := build/ps5/blessing_overlay.elf
+OVERLAY_SOURCES := overlay/src/main.cpp src/overlay/hold_shortcut.cpp
 FRONTEND_DIR := frontend
 FRONTEND_ASSET := $(FRONTEND_DIR)/dist/index.html
 FRONTEND_MARKER := $(FRONTEND_DIR)/node_modules/.package-lock.json
@@ -73,6 +74,7 @@ CPPFLAGS := -Iinclude -Ithird_party -Ithird_party/shnext \
 	-DEZ_CHEATS_MEDIA_ICON_PATH='"$(abspath $(MEDIA_ICON_ASSET))"' \
 	-DEZ_CHEATS_OVERLAY_PATH='"$(abspath $(OVERLAY_ELF))"'
 CXXFLAGS := -std=c++20 -nostdlib++ -Wall -Wextra -Werror -Os
+OVERLAY_CXXFLAGS := $(CXXFLAGS) -fno-exceptions -fno-rtti
 PS5_LIBS := -lSceSystemService -lSceAppInstUtil -lSceUserService -lSceNet \
 	-lSceNetCtl -lpthread
 
@@ -113,9 +115,10 @@ $(FRONTEND_ASSET): frontend-build
 
 overlay: $(OVERLAY_ELF)
 
-$(OVERLAY_ELF): overlay/src/main.cpp
+$(OVERLAY_ELF): $(OVERLAY_SOURCES) $(HEADERS)
 	mkdir -p $(dir $@)
-	$(CXX) -Iinclude $(CXXFLAGS) -o $@ $< -lpthread
+	$(CXX) -Iinclude $(OVERLAY_CXXFLAGS) -o $@ $(OVERLAY_SOURCES) \
+		-lScePad -lSceUserService -lpthread
 
 $(ELF): $(SOURCES) $(PARSER_C_OBJECTS) $(HEADERS) $(FRONTEND_ASSET) \
 	$(MEDIA_PARAM_ASSET) $(MEDIA_ICON_ASSET) $(OVERLAY_ELF)
@@ -161,6 +164,10 @@ host-test: $(HOST_PARSER_C_OBJECTS)
 		-o build/host-tests/overlay_session tests/overlay_session.cpp \
 		src/overlay/overlay_session.cpp
 	./build/host-tests/overlay_session
+	$(HOST_CXX) $(HOST_TEST_FLAGS) \
+		-o build/host-tests/hold_shortcut tests/hold_shortcut.cpp \
+		src/overlay/hold_shortcut.cpp
+	./build/host-tests/hold_shortcut
 	$(HOST_CXX) $(HOST_TEST_FLAGS) \
 		-o build/host-tests/json_parser tests/json_parser.cpp \
 		$(HOST_PARSER_SOURCES) $(HOST_PARSER_C_OBJECTS)
