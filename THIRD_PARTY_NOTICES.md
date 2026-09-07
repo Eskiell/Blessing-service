@@ -63,12 +63,14 @@ ptrace and remote ELF loading flow used by OnionHEN:
   - `source/libonion_elfldr/source/elfldr.c`
   - `source/daemon/source/daemon_inject.cpp`
   - `source/daemon/source/embedded_payloads.c`
+  - `source/shellui/src/hook_boot.cpp`
 - License: GNU General Public License, version 3
 
-The Blessing version only embeds and starts its own inert overlay payload. It
-adds explicit ELF bounds checks, PID-scoped readiness, duplicate prevention,
-scoped authid restoration and non-fatal startup integration. It does not import
-the OnionHEN daemon, toolbox, settings, plugins or cheat service.
+The Blessing version only embeds and starts its own isolated overlay payload.
+It adds explicit ELF bounds checks, PID-scoped readiness, duplicate prevention,
+scoped authid restoration, a release-gated L3+R3 hold detector and non-fatal
+startup integration. It does not import the OnionHEN daemon, toolbox, settings,
+plugins or cheat service.
 
 The Base64 implementation carries its original copyright notice and BSD
 permission statement in `third_party/mc4/base64.c`. The AES implementation is
