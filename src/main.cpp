@@ -5,6 +5,7 @@
 #include "ezcheats/application/cheat_service.hpp"
 #include "ezcheats/http/http_server.hpp"
 #include "ezcheats/memory/memory_backend_factory.hpp"
+#include "ezcheats/overlay/overlay_manager.hpp"
 #include "ezcheats/platform/ps5_game_platform.hpp"
 #include "ezcheats/platform/ps5_media_tile.hpp"
 #include "ezcheats/repository/file_cheat_repository.hpp"
@@ -46,6 +47,9 @@ int main() {
          repository.directory(), memory->name(), firmware);
   ezcheats::application::CheatService cheat_service{platform, repository,
                                                      *memory};
+  if (!ezcheats::overlay::start_overlay_injection()) {
+    printf("Blessing: could not start overlay injector; tile remains available\n");
+  }
   ezcheats::http::HttpServer server{static_cast<uint16_t>(EZ_CHEATS_HTTP_PORT),
                                     cheat_service};
   return server.run();

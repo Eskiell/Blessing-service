@@ -32,7 +32,7 @@ available as a fallback.
 ## Pull requests
 
 - [x] PR 22: add the transport contract and testable overlay session model.
-- [ ] PR 23: embed and safely inject an inert overlay ELF into `SceShellUI`.
+- [x] PR 23: embed and safely inject an inert overlay ELF into `SceShellUI`.
 - [ ] PR 24: add the controller shortcut and a non-interactive test panel.
 - [ ] PR 25: render the cheat list and connect toggles to `CheatService`.
 - [ ] PR 26: harden firmware profiles, rest-mode reinjection and performance.
@@ -40,3 +40,17 @@ available as a fallback.
 Each step must leave the existing Media tile workflow operational. PRs 23 and
 later require hardware validation before merge because host tests cannot prove
 ShellUI ABI and firmware compatibility.
+
+### PR 23 runtime diagnostics
+
+The main payload starts injection on a detached thread. The inert module writes
+the current ShellUI PID to `/system_tmp/blessing/overlay-ready`; a matching PID
+prevents duplicate injection. Expected debug output is:
+
+```text
+Blessing overlay: inert module loaded pid=<pid> ready=yes
+Blessing overlay: injection=ready pid=<pid>
+```
+
+Missing ShellUI, invalid embedded ELF, ptrace failures and readiness timeouts
+are non-fatal. In every failure path the existing Media tile remains available.
