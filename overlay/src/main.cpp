@@ -21,13 +21,15 @@ constexpr useconds_t kPollDelayUs = 33 * 1000;
 constexpr useconds_t kRetryDelayUs = 1000 * 1000;
 
 extern "C" {
-int sceUserServiceInitialize(const void* priority);
 int sceUserServiceGetForegroundUser(int* user_id);
 int scePadGetHandle(int user_id, int controller_type, int controller_index);
 int scePadReadState(int handle, void* state);
-int sceKernelSendNotificationRequest(int device, void* request, size_t size,
-                                     int blocking);
+int sceKernelDlsym(int handle, const char* name, void** address);
 }
+
+using SendNotification = int (*)(int, void*, size_t, int);
+
+SendNotification g_send_notification = nullptr;
 
 struct NotificationRequest {
   char reserved[45];
@@ -68,18 +70,41 @@ bool publish_ready() {
 }
 
 void show_test_panel(bool visible) {
+  printf("Blessing overlay: shortcut accepted panel=%s\n",
+         visible ? "open" : "closed");
+  if (g_send_notification == nullptr) {
+    printf("Blessing overlay: notification unavailable; request skipped\n");
+    return;
+  }
   NotificationRequest request{};
   snprintf(request.message, sizeof(request.message),
            visible ? "Blessing\nOverlay de teste aberto\nNenhum cheat foi alterado."
                    : "Blessing\nOverlay de teste fechado");
-  const int result = sceKernelSendNotificationRequest(
-      0, &request, sizeof(request), 0);
+  printf("Blessing overlay: notification dispatch begin\n");
+  const int result = g_send_notification(0, &request, sizeof(request), 0);
   printf("Blessing overlay: test panel=%s notify=0x%x\n",
          visible ? "open" : "closed", result);
 }
 
+bool resolve_notification_sender() {
+  constexpr int kLibKernelHandles[] = {1, 0x2001};
+  for (const int handle : kLibKernelHandles) {
+    void* address = nullptr;
+    const int result = sceKernelDlsym(
+        handle, "sceKernelSendNotificationRequest", &address);
+    if (result == 0 && address != nullptr) {
+      g_send_notification = reinterpret_cast<SendNotification>(address);
+      printf("Blessing overlay: notification ready handle=0x%x address=%p\n",
+             handle, address);
+      return true;
+    }
+    printf("Blessing overlay: notification resolve handle=0x%x result=0x%x\n",
+           handle, result);
+  }
+  return false;
+}
+
 int acquire_pad_handle() {
-  (void)sceUserServiceInitialize(nullptr);
   int user_id = -1;
   if (sceUserServiceGetForegroundUser(&user_id) != 0 || user_id < 0) {
     return -1;
@@ -136,5 +161,8 @@ int main() {
   const bool ready = publish_ready();
   printf("Blessing overlay: inert module loaded pid=%d ready=%s\n", getpid(),
          ready ? "yes" : "no");
+  if (!resolve_notification_sender()) {
+    printf("Blessing overlay: notification resolver unavailable; continuing safely\n");
+  }
   run_shortcut_loop();
 }

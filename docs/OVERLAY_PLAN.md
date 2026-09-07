@@ -36,8 +36,10 @@ available as a fallback.
 - [x] PR 22: add the transport contract and testable overlay session model.
 - [x] PR 23: embed and safely inject an inert overlay ELF into `SceShellUI`.
 - [x] PR 24: add the controller shortcut and a non-interactive test panel.
-- [ ] PR 25: render the cheat list and connect toggles to `CheatService`.
-- [ ] PR 26: harden firmware profiles, rest-mode reinjection and performance.
+- [x] PR 25: resolve the ShellUI notification entry point safely and add
+  crash-boundary diagnostics.
+- [ ] PR 26: render the cheat list and connect toggles to `CheatService`.
+- [ ] PR 27: harden firmware profiles, rest-mode reinjection and performance.
 
 Each step must leave the existing Media tile workflow operational. PRs 23 and
 later require hardware validation before merge because host tests cannot prove
@@ -81,3 +83,27 @@ Blessing overlay: test panel=closed notify=0x0
 If controller reads repeatedly fail, the marker is removed and the module
 reacquires the foreground controller without affecting the Media tile or cheat
 service.
+
+### PR 25 ShellUI notification hotfix
+
+Hardware validation of PR 24 showed a brief ShellUI freeze and refresh when the
+shortcut attempted to display the test card. PR 25 removes the direct
+`sceKernelSendNotificationRequest` import. The overlay resolves that entry
+point explicitly through `sceKernelDlsym` using the two known libkernel handles
+and skips the notification if neither resolves. This follows the same boundary
+used by OnionHEN's injected ShellUI module: a missing notification function is
+non-fatal.
+
+Expected debug output before the shortcut is accepted is:
+
+```text
+Blessing overlay: notification ready handle=0x<handle> address=<address>
+Blessing overlay: input ready; hold L3+R3 for 1 second
+```
+
+The shortcut path logs `notification dispatch begin` before entering the
+resolved function and `test panel=... notify=...` only after it returns. These
+two messages make any remaining platform fault boundary unambiguous.
+
+The injected module also reuses ShellUI's already initialized user service
+instead of attempting to initialize that process-global service again.

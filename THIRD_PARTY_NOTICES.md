@@ -64,6 +64,8 @@ ptrace and remote ELF loading flow used by OnionHEN:
   - `source/daemon/source/daemon_inject.cpp`
   - `source/daemon/source/embedded_payloads.c`
   - `source/shellui/src/hook_boot.cpp`
+  - `source/shellui/src/prx.cpp`
+  - `source/libonion_platform/source/notify.c`
 - License: GNU General Public License, version 3
 
 The Blessing version only embeds and starts its own isolated overlay payload.
