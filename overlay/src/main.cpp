@@ -36,9 +36,25 @@ using SendNotification = int (*)(int, void*, size_t, int);
 SendNotification g_send_notification = nullptr;
 
 struct NotificationRequest {
-  char reserved[45];
-  char message[3075];
+  int32_t type;
+  int32_t request_id;
+  int32_t priority;
+  int32_t message_id;
+  int32_t target_id;
+  int32_t user_id;
+  int32_t unknown_1;
+  int32_t unknown_2;
+  int32_t app_id;
+  int32_t error_number;
+  int32_t unknown_3;
+  char use_icon_image_uri;
+  char message[1024];
+  char uri[1024];
+  char unknown_string[1024];
+  char padding[3];
 };
+
+static_assert(sizeof(NotificationRequest) == 0xC30);
 
 struct alignas(16) PadState {
   uint8_t bytes[256];
@@ -114,10 +130,16 @@ void show_test_panel(bool visible) {
     return;
   }
   NotificationRequest request{};
+  request.type = 0;
+  request.target_id = -1;
+  request.unknown_3 = 0;
+  request.use_icon_image_uri = 0;
   snprintf(request.message, sizeof(request.message),
            visible ? "Blessing\nOverlay de teste aberto\nNenhum cheat foi alterado."
                    : "Blessing\nOverlay de teste fechado");
-  log_message("Blessing overlay: notification dispatch begin\n");
+  log_message(
+      "Blessing overlay: notification dispatch begin target=%d size=0x%zx\n",
+      request.target_id, sizeof(request));
   const int result = g_send_notification(0, &request, sizeof(request), 0);
   log_message("Blessing overlay: test panel=%s notify=0x%x\n",
               visible ? "open" : "closed", result);

@@ -113,3 +113,8 @@ All overlay diagnostics are mirrored to
 overlay instance starts, so it contains only the current injected session and
 cannot grow across restarts. Failure to create or append the file is non-fatal;
 console output continues to work.
+
+The hardware crash report captured a `SIGSEGV` on `SceShellUIMain` while PUI
+was finishing the notification render (`UIRenderer.End` / `WaitVBlank`). The
+notification request therefore uses the complete `0xC30` ABI layout and sets
+`target_id=-1`, rather than relying on an opaque zero-filled 45-byte prefix.
