@@ -148,6 +148,10 @@ host-test: $(HOST_PARSER_C_OBJECTS)
 		src/application/in_memory_cheat_service.cpp
 	./build/host-tests/http_routes
 	$(HOST_CXX) $(HOST_TEST_FLAGS) \
+		-o build/host-tests/overlay_session tests/overlay_session.cpp \
+		src/overlay/overlay_session.cpp
+	./build/host-tests/overlay_session
+	$(HOST_CXX) $(HOST_TEST_FLAGS) \
 		-o build/host-tests/json_parser tests/json_parser.cpp \
 		$(HOST_PARSER_SOURCES) $(HOST_PARSER_C_OBJECTS)
 	./build/host-tests/json_parser
