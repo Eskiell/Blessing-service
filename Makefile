@@ -25,8 +25,6 @@ $(error PS5_PAYLOAD_SDK is undefined. Export PS5_PAYLOAD_SDK=/path/to/ps5-payloa
 endif
 
 ELF := blessing.elf
-OVERLAY_ELF := build/ps5/blessing_overlay.elf
-OVERLAY_SOURCES := overlay/src/main.cpp src/overlay/hold_shortcut.cpp
 FRONTEND_DIR := frontend
 FRONTEND_ASSET := $(FRONTEND_DIR)/dist/index.html
 FRONTEND_MARKER := $(FRONTEND_DIR)/node_modules/.package-lock.json
@@ -50,9 +48,7 @@ SOURCES := \
 	src/platform/ps5_media_tile.cpp \
 	src/memory/ps5_memory_backends.cpp \
 	src/http/http_server.cpp \
-	src/assets/embedded_frontend.cpp \
-	src/assets/embedded_overlay.cpp \
-	src/overlay/overlay_manager.cpp
+	src/assets/embedded_frontend.cpp
 PARSER_C_OBJECTS := build/ps5/mc4/aes.o build/ps5/mc4/base64.o \
 	build/ps5/shnext/miniz.o build/ps5/shnext/sha256.o \
 	build/ps5/shnext/cJSON.o
@@ -71,10 +67,8 @@ CPPFLAGS := -Iinclude -Ithird_party -Ithird_party/shnext \
 	-DEZ_CHEATS_DIRECTORY='"$(CHEATS_DIRECTORY)"' \
 	-DEZ_CHEATS_FRONTEND_PATH='"$(abspath $(FRONTEND_ASSET))"' \
 	-DEZ_CHEATS_MEDIA_PARAM_PATH='"$(abspath $(MEDIA_PARAM_ASSET))"' \
-	-DEZ_CHEATS_MEDIA_ICON_PATH='"$(abspath $(MEDIA_ICON_ASSET))"' \
-	-DEZ_CHEATS_OVERLAY_PATH='"$(abspath $(OVERLAY_ELF))"'
+	-DEZ_CHEATS_MEDIA_ICON_PATH='"$(abspath $(MEDIA_ICON_ASSET))"'
 CXXFLAGS := -std=c++20 -nostdlib++ -Wall -Wextra -Werror -Os
-OVERLAY_CXXFLAGS := $(CXXFLAGS) -fno-exceptions -fno-rtti
 PS5_LIBS := -lSceSystemService -lSceAppInstUtil -lSceUserService -lSceNet \
 	-lSceNetCtl -lpthread
 
@@ -100,7 +94,7 @@ else
 $(error SHNEXT_KEYSTONE must be 0 or 1)
 endif
 
-.PHONY: all clean deploy frontend-build host-test overlay
+.PHONY: all clean deploy frontend-build host-test
 
 all: $(ELF)
 
@@ -113,15 +107,8 @@ frontend-build: $(FRONTEND_MARKER)
 $(FRONTEND_ASSET): frontend-build
 	@test -s $@
 
-overlay: $(OVERLAY_ELF)
-
-$(OVERLAY_ELF): $(OVERLAY_SOURCES) $(HEADERS)
-	mkdir -p $(dir $@)
-	$(CXX) -Iinclude $(OVERLAY_CXXFLAGS) -o $@ $(OVERLAY_SOURCES) \
-		-lScePad -lSceUserService -lpthread
-
 $(ELF): $(SOURCES) $(PARSER_C_OBJECTS) $(HEADERS) $(FRONTEND_ASSET) \
-	$(MEDIA_PARAM_ASSET) $(MEDIA_ICON_ASSET) $(OVERLAY_ELF)
+	$(MEDIA_PARAM_ASSET) $(MEDIA_ICON_ASSET)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $(SOURCES) $(PARSER_C_OBJECTS) \
 		$(SHNEXT_LIBS) $(PS5_LIBS)
 
@@ -160,14 +147,6 @@ host-test: $(HOST_PARSER_C_OBJECTS)
 		-o build/host-tests/http_routes tests/http_routes.cpp \
 		src/application/in_memory_cheat_service.cpp
 	./build/host-tests/http_routes
-	$(HOST_CXX) $(HOST_TEST_FLAGS) \
-		-o build/host-tests/overlay_session tests/overlay_session.cpp \
-		src/overlay/overlay_session.cpp
-	./build/host-tests/overlay_session
-	$(HOST_CXX) $(HOST_TEST_FLAGS) \
-		-o build/host-tests/hold_shortcut tests/hold_shortcut.cpp \
-		src/overlay/hold_shortcut.cpp
-	./build/host-tests/hold_shortcut
 	$(HOST_CXX) $(HOST_TEST_FLAGS) \
 		-o build/host-tests/json_parser tests/json_parser.cpp \
 		$(HOST_PARSER_SOURCES) $(HOST_PARSER_C_OBJECTS)
