@@ -50,28 +50,6 @@ The Blessing adaptation replaces OnionHEN-specific logging, paths and utility
 dependencies, uses the Blessing domain model, adds explicit ownership and
 bounded parsing, and rejects unregistered formats.
 
-## OnionHEN ShellUI loading reference
-
-The isolated ShellUI loader under `src/overlay` was adapted from the guarded
-ptrace and remote ELF loading flow used by OnionHEN:
-
-- Project: [aydencharles/onionHEN](https://github.com/aydencharles/onionHEN)
-- Source revision: `9836e583174b728bf0cbeeb1d45644a40e9cd28c`
-- Source paths:
-  - `source/libNineS/src/injector.c`
-  - `source/libonion_elfldr/source/pt.c`
-  - `source/libonion_elfldr/source/elfldr.c`
-  - `source/daemon/source/daemon_inject.cpp`
-  - `source/daemon/source/embedded_payloads.c`
-  - `source/shellui/src/hook_boot.cpp`
-- License: GNU General Public License, version 3
-
-The Blessing version only embeds and starts its own isolated overlay payload.
-It adds explicit ELF bounds checks, PID-scoped readiness, duplicate prevention,
-scoped authid restoration, a release-gated L3+R3 hold detector and non-fatal
-startup integration. It does not import the OnionHEN daemon, toolbox, settings,
-plugins or cheat service.
-
 The Base64 implementation carries its original copyright notice and BSD
 permission statement in `third_party/mc4/base64.c`. The AES implementation is
 vendored from the OnionHEN revision identified above and remains distributed as
