@@ -107,3 +107,9 @@ two messages make any remaining platform fault boundary unambiguous.
 
 The injected module also reuses ShellUI's already initialized user service
 instead of attempting to initialize that process-global service again.
+
+All overlay diagnostics are mirrored to
+`/data/ez-cheats/blessing-overlay.log`. The file is truncated when a new
+overlay instance starts, so it contains only the current injected session and
+cannot grow across restarts. Failure to create or append the file is non-fatal;
+console output continues to work.

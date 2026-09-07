@@ -1,4 +1,6 @@
+#include <errno.h>
 #include <fcntl.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -10,6 +12,8 @@
 namespace {
 
 constexpr const char* kStateDirectory = "/system_tmp/blessing";
+constexpr const char* kDataDirectory = "/data/ez-cheats";
+constexpr const char* kLogPath = "/data/ez-cheats/blessing-overlay.log";
 constexpr const char* kReadyPath = "/system_tmp/blessing/overlay-ready";
 constexpr const char* kInputReadyPath =
     "/system_tmp/blessing/overlay-input-ready";
@@ -53,6 +57,38 @@ uint64_t monotonic_ms() noexcept {
          static_cast<uint64_t>(time.tv_nsec) / 1000000;
 }
 
+bool initialize_log() {
+  mkdir(kDataDirectory, 0777);
+  const int file = open(kLogPath, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+  if (file < 0) return false;
+  return close(file) == 0;
+}
+
+void log_message(const char* format, ...) {
+  char message[512]{};
+  va_list arguments;
+  va_start(arguments, format);
+  const int formatted = vsnprintf(message, sizeof(message), format, arguments);
+  va_end(arguments);
+  if (formatted <= 0) return;
+
+  const size_t size = static_cast<size_t>(formatted) < sizeof(message)
+                          ? static_cast<size_t>(formatted)
+                          : sizeof(message) - 1;
+  printf("%s", message);
+
+  const int file = open(kLogPath, O_WRONLY | O_CREAT | O_APPEND, 0666);
+  if (file < 0) return;
+  size_t offset = 0;
+  while (offset < size) {
+    const ssize_t written = write(file, message + offset, size - offset);
+    if (written < 0 && errno == EINTR) continue;
+    if (written <= 0) break;
+    offset += static_cast<size_t>(written);
+  }
+  close(file);
+}
+
 bool write_pid_marker(const char* path) {
   const int file = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0666);
   if (file < 0) return false;
@@ -70,20 +106,21 @@ bool publish_ready() {
 }
 
 void show_test_panel(bool visible) {
-  printf("Blessing overlay: shortcut accepted panel=%s\n",
-         visible ? "open" : "closed");
+  log_message("Blessing overlay: shortcut accepted panel=%s\n",
+              visible ? "open" : "closed");
   if (g_send_notification == nullptr) {
-    printf("Blessing overlay: notification unavailable; request skipped\n");
+    log_message(
+        "Blessing overlay: notification unavailable; request skipped\n");
     return;
   }
   NotificationRequest request{};
   snprintf(request.message, sizeof(request.message),
            visible ? "Blessing\nOverlay de teste aberto\nNenhum cheat foi alterado."
                    : "Blessing\nOverlay de teste fechado");
-  printf("Blessing overlay: notification dispatch begin\n");
+  log_message("Blessing overlay: notification dispatch begin\n");
   const int result = g_send_notification(0, &request, sizeof(request), 0);
-  printf("Blessing overlay: test panel=%s notify=0x%x\n",
-         visible ? "open" : "closed", result);
+  log_message("Blessing overlay: test panel=%s notify=0x%x\n",
+              visible ? "open" : "closed", result);
 }
 
 bool resolve_notification_sender() {
@@ -94,12 +131,14 @@ bool resolve_notification_sender() {
         handle, "sceKernelSendNotificationRequest", &address);
     if (result == 0 && address != nullptr) {
       g_send_notification = reinterpret_cast<SendNotification>(address);
-      printf("Blessing overlay: notification ready handle=0x%x address=%p\n",
-             handle, address);
+      log_message(
+          "Blessing overlay: notification ready handle=0x%x address=%p\n",
+          handle, address);
       return true;
     }
-    printf("Blessing overlay: notification resolve handle=0x%x result=0x%x\n",
-           handle, result);
+    log_message(
+        "Blessing overlay: notification resolve handle=0x%x result=0x%x\n",
+        handle, result);
   }
   return false;
 }
@@ -110,7 +149,10 @@ int acquire_pad_handle() {
     return -1;
   }
   const int handle = scePadGetHandle(user_id, 0, 0);
-  printf("Blessing overlay: pad user=%d handle=0x%x\n", user_id, handle);
+  if (handle >= 0) {
+    log_message("Blessing overlay: pad user=%d handle=0x%x\n", user_id,
+                handle);
+  }
   return handle;
 }
 
@@ -128,7 +170,8 @@ void run_shortcut_loop() {
         continue;
       }
       write_pid_marker(kInputReadyPath);
-      printf("Blessing overlay: input ready; hold L3+R3 for 1 second\n");
+      log_message(
+          "Blessing overlay: input ready; hold L3+R3 for 1 second\n");
     }
 
     PadState state{};
@@ -136,8 +179,8 @@ void run_shortcut_loop() {
     if (result != 0) {
       shortcut.reset();
       if (++read_failures >= 30) {
-        printf("Blessing overlay: pad read failed=0x%x; reacquiring\n",
-               result);
+        log_message("Blessing overlay: pad read failed=0x%x; reacquiring\n",
+                    result);
         read_failures = 0;
         handle = -1;
         unlink(kInputReadyPath);
@@ -158,11 +201,15 @@ void run_shortcut_loop() {
 }  // namespace
 
 int main() {
+  const bool log_ready = initialize_log();
+  log_message("Blessing overlay: persistent log=%s ready=%s\n", kLogPath,
+              log_ready ? "yes" : "no");
   const bool ready = publish_ready();
-  printf("Blessing overlay: inert module loaded pid=%d ready=%s\n", getpid(),
-         ready ? "yes" : "no");
+  log_message("Blessing overlay: module loaded pid=%d ready=%s\n", getpid(),
+              ready ? "yes" : "no");
   if (!resolve_notification_sender()) {
-    printf("Blessing overlay: notification resolver unavailable; continuing safely\n");
+    log_message(
+        "Blessing overlay: notification resolver unavailable; continuing safely\n");
   }
   run_shortcut_loop();
 }
