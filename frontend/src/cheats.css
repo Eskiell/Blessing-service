@@ -26,10 +26,7 @@ button { font: inherit; }
   min-height: 100vh;
   overflow: hidden;
   padding: 48px clamp(28px, 4.5vw, 76px) 30px;
-  background:
-    radial-gradient(circle at 92% 4%, rgba(198, 214, 205, .7), transparent 29%),
-    radial-gradient(circle at 5% 0%, rgba(207, 219, 230, .68), transparent 30%),
-    linear-gradient(145deg, #f4f5f1 0%, #edf1ed 52%, #e8eeea 100%);
+  background: linear-gradient(145deg, #e5ebe8 0%, #e2e8e4 52%, #dfe7e2 100%);
 }
 
 .screen::before {
