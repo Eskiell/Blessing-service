@@ -20,7 +20,7 @@ async function refresh({ quiet = false } = {}) {
       error.value = state.value.error || ''
     } catch (requestError) {
       state.value = { connected: false, game: null, cheats: [], backend: 'unknown' }
-      error.value = requestError.message || 'Não foi possível conectar ao serviço de cheats.'
+      error.value = requestError.message || 'Não foi possível conectar ao serviço Blessing.'
     } finally {
       loading.value = false
     }
@@ -43,7 +43,7 @@ async function toggleCheat(cheat) {
       item.id === updated.id ? { ...item, ...updated } : item,
     )
   } catch (requestError) {
-    error.value = requestError.message || `Não foi possível alterar “${cheat.name}”.`
+    error.value = requestError.message || `Não foi possível aplicar o modificador “${cheat.name}”.`
   } finally {
     const next = new Set(pendingIds.value)
     next.delete(cheat.id)
@@ -64,7 +64,7 @@ onBeforeUnmount(() => {
 <template>
   <main class="screen">
     <header class="header">
-      <div><p class="eyebrow">BLESSING</p><h1>Cheats do jogo</h1></div>
+      <div><p class="eyebrow">BLESSING</p><h1>Modificadores</h1></div>
       <div class="connection" :class="{ offline: !state.connected }">
         <span class="status-dot" />
         {{ state.connected ? 'Serviço conectado' : 'Serviço desconectado' }}
@@ -79,7 +79,7 @@ onBeforeUnmount(() => {
         <p>{{ state.game.titleId }} · Versão {{ state.game.version }} · {{ state.game.platform.toUpperCase() }}</p>
       </div>
       <dl class="game-stats">
-        <div><dt>Cheats ativos</dt><dd>{{ enabledCount }}/{{ state.cheats.length }}</dd></div>
+        <div><dt>Ativos</dt><dd>{{ enabledCount }}/{{ state.cheats.length }}</dd></div>
         <div><dt>Backend</dt><dd>{{ state.backend }}</dd></div>
       </dl>
     </section>
@@ -90,16 +90,16 @@ onBeforeUnmount(() => {
       </div>
       <div v-else-if="!state.game" class="empty-state">
         <div class="empty-icon">—</div><h2>Nenhum jogo detectado</h2>
-        <p>Abra um jogo compatível para carregar os cheats disponíveis.</p>
+        <p>Abra um jogo compatível para carregar os modificadores disponíveis.</p>
         <button type="button" @click="refresh()">Tentar novamente</button>
       </div>
       <div v-else-if="state.cheats.length === 0" class="empty-state">
-        <div class="empty-icon">0</div><h2>Nenhum cheat disponível</h2>
+        <div class="empty-icon">0</div><h2>Nenhum modificador disponível</h2>
         <p>Adicione um arquivo compatível com o título e a versão do jogo.</p>
       </div>
       <template v-else>
         <div class="section-heading">
-          <div><h2>Disponíveis</h2><p>{{ state.cheats.length }} opções carregadas</p></div>
+          <div><h2>Disponíveis</h2><p>{{ state.cheats.length }} ajustes</p></div>
           <button class="refresh-button" type="button" @click="refresh()">Atualizar</button>
         </div>
         <div class="cheat-list">
@@ -118,6 +118,6 @@ onBeforeUnmount(() => {
     </section>
 
     <aside v-if="error" class="error-message">{{ error }}</aside>
-    <footer class="footer"><span><kbd>✕</kbd> Alternar cheat</span><span>Atualização automática a cada 3 segundos</span></footer>
+    <footer class="footer"><span><kbd>✕</kbd> Alternar modificador</span><span>Atualização automática a cada 3 segundos</span></footer>
   </main>
 </template>

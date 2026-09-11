@@ -1,4 +1,4 @@
-# Blessing - cheats
+# Blessing Service
 
 Blessing is a standalone PS5 payload with a Vue 3 interface for listing and
 toggling cheats for the currently running game. Vite builds the frontend as a
@@ -22,8 +22,8 @@ npm run dev
 ## Build
 
 ```sh
-git clone https://github.com/Eskiell/ez-cheats.git
-cd ez-cheats
+git clone https://github.com/Eskiell/Blessing-service.git
+cd Blessing-service
 export PS5_PAYLOAD_SDK=/path/to/ps5-payload-sdk
 make all
 ```
